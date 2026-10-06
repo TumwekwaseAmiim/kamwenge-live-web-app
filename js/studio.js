@@ -1,12 +1,12 @@
 import {getMeeting,updateMeeting,watchMeeting,watchComments,watchSpeakerRequests,updateSpeakerRequest} from './store.js';
 import {requireBroadcaster} from './auth.js';
-import {publishStream,replacePublishedStream,stopPublish,onStudioParticipantChange,moderateParticipant,setStudioGuestContainer,clearVoiceConstraints} from './streaming-adapter.js';
+import {publishStream,replacePublishedStream,stopPublish,onStudioParticipantChange,moderateParticipant,setStudioGuestContainer,clearVoiceConstraints,resumeStudioAudio} from './streaming-adapter.js';
 import {escapeHTML,toast} from './app.js';
 
 const MAX_SPEAKERS=4;
 const eventId=new URLSearchParams(location.search).get('event');
 const video=document.querySelector('#studio-video'),placeholder=document.querySelector('#studio-placeholder'),sourceLabel=document.querySelector('#source-label'),videoShell=video?.closest('.video-shell');
-const startBtn=document.querySelector('#start-camera'),switchBtn=document.querySelector('#switch-camera'),screenBtn=document.querySelector('#share-screen'),fullscreenBtn=document.querySelector('#studio-fullscreen'),micBtn=document.querySelector('#toggle-mic'),liveBtn=document.querySelector('#go-live'),endBtn=document.querySelector('#end-live');
+const startBtn=document.querySelector('#start-camera'),switchBtn=document.querySelector('#switch-camera'),screenBtn=document.querySelector('#share-screen'),fullscreenBtn=document.querySelector('#studio-fullscreen'),micBtn=document.querySelector('#toggle-mic'),guestAudioBtn=document.querySelector('#studio-audio'),liveBtn=document.querySelector('#go-live'),endBtn=document.querySelector('#end-live');
 const recordBtn=document.querySelector('#record-device'),recordState=document.querySelector('#record-state'),storageText=document.querySelector('#storage-text'),storageBar=document.querySelector('#storage-bar'),comments=document.querySelector('#studio-comments');
 const requestList=document.querySelector('#speaker-requests'),activeSpeakers=document.querySelector('#active-speakers'),speakerCount=document.querySelector('#speaker-count'),guestMedia=document.querySelector('#studio-guest-media');
 let session,meeting,cameraStream=null,currentStream=null,facing='environment',recorder=null,writable=null,recording=false,recordTimer=null,recordStartedAt=0,publishing=false;
@@ -15,16 +15,49 @@ setStudioGuestContainer(guestMedia);
 
 (async()=>{try{session=await requireBroadcaster();meeting=await getMeeting(eventId);if(!meeting)throw new Error('Event not found.');if(meeting.hostId!==session.user.uid&&session.profile.role!=='admin')throw new Error('You do not own this broadcast.');document.querySelector('#studio-host-photo').src=session.profile.photoURL||'assets/images/avatar-placeholder.svg';document.querySelector('#studio-host-name').textContent=session.profile.displayName||session.user.email;watchMeeting(meeting.id,syncEvent);watchComments(meeting.id,renderComments);watchSpeakerRequests(meeting.id,items=>{speakerRequests=items;renderSpeakerManager();});onStudioParticipantChange(items=>{roomParticipants=items;renderSpeakerManager();});}catch(e){toast(e.message);setTimeout(()=>location.href='dashboard.html',1200)}})();
 
+
+async function enableStudioGuestSound(){
+  try{
+    await resumeStudioAudio();
+    if(guestAudioBtn){guestAudioBtn.textContent='🔊 Guest Sound On';guestAudioBtn.classList.add('active');}
+  }catch{toast('Tap again to enable guest sound.');}
+}
+guestAudioBtn?.addEventListener('click',enableStudioGuestSound);
+// Any deliberate tap in Studio is also a chance to satisfy mobile browser audio policies.
+document.addEventListener('pointerdown',()=>{if(publishing)resumeStudioAudio().catch(()=>{});},{passive:true});
+
 function setPreview(stream,label){currentStream=stream;video.srcObject=stream;video.muted=true;video.play().catch(()=>{});placeholder.classList.add('hidden');sourceLabel.textContent=label;}
 async function refreshPublicStream(){if(!publishing||!meeting||!currentStream)return;try{sourceLabel.textContent+=' • updating viewers…';await replacePublishedStream(meeting.id,currentStream);toast('Live source changed for viewers ✅');}catch(e){toast(e.message);}}
-async function openCamera(){try{cameraStream?.getTracks().forEach(t=>t.stop());cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30}},audio:clearVoiceConstraints()});cameraStream.getAudioTracks().forEach(t=>{try{t.contentHint='speech';}catch{}});setPreview(cameraStream,facing==='environment'?'📷 Back camera • Clear Voice':'🤳 Front camera • Clear Voice');await refreshPublicStream();return true;}catch(e){toast('Camera or microphone permission was not granted.');return false;}}
+async function openCamera(){
+  cameraStream?.getTracks().forEach(t=>t.stop());
+  const videoConstraints={facingMode:{ideal:facing},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30}};
+  const attempts=[
+    {video:videoConstraints,audio:clearVoiceConstraints()},
+    {video:videoConstraints,audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}},
+    {video:videoConstraints,audio:true}
+  ];
+  let lastError;
+  for(const constraints of attempts){
+    try{
+      cameraStream=await navigator.mediaDevices.getUserMedia(constraints);
+      if(!cameraStream.getAudioTracks().length){cameraStream.getTracks().forEach(t=>t.stop());continue;}
+      cameraStream.getAudioTracks().forEach(t=>{try{t.contentHint='speech';}catch{}});
+      setPreview(cameraStream,facing==='environment'?'📷 Back camera • Clear Voice':'🤳 Front camera • Clear Voice');
+      await refreshPublicStream();
+      return true;
+    }catch(e){lastError=e;}
+  }
+  console.error('Camera/microphone start failed:',lastError);
+  toast('Allow both camera and microphone, then try again.');
+  return false;
+}
 startBtn.onclick=openCamera;switchBtn.onclick=async()=>{facing=facing==='environment'?'user':'environment';await openCamera();};
 micBtn.onclick=()=>{const t=currentStream?.getAudioTracks?.()[0];if(!t)return toast('No microphone is active.');t.enabled=!t.enabled;micBtn.textContent=t.enabled?'🎤 Mute':'🔇 Unmute';micBtn.classList.toggle('active',!t.enabled);};
 screenBtn.onclick=async()=>{if(!navigator.mediaDevices?.getDisplayMedia)return toast('Screen sharing is not supported in this browser.');try{const screen=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:20,max:30}},audio:false});const mic=cameraStream?.getAudioTracks()?.[0];if(mic)screen.addTrack(mic);setPreview(screen,'🖥️ Shared screen • Microphone live');await refreshPublicStream();screen.getVideoTracks()[0].addEventListener('ended',async()=>{if(cameraStream){setPreview(cameraStream,facing==='environment'?'📷 Back camera • Clear Voice':'🤳 Front camera • Clear Voice');await refreshPublicStream();}},{once:true});}catch(e){if(e?.name!=='AbortError')toast('Could not start screen sharing.');}};
 fullscreenBtn?.addEventListener('click',async()=>{const target=videoShell||video;try{if(document.fullscreenElement||document.webkitFullscreenElement){if(document.exitFullscreen)await document.exitFullscreen();else document.webkitExitFullscreen?.();return;}if(target?.requestFullscreen)await target.requestFullscreen();else if(target?.webkitRequestFullscreen)target.webkitRequestFullscreen();else if(video?.webkitEnterFullscreen)video.webkitEnterFullscreen();else toast('Fullscreen is not supported on this device.');}catch{toast('Could not open fullscreen.');}});
 
 function syncEvent(m){if(!m)return;meeting=m;document.querySelector('#studio-title').textContent=m.title;const live=m.status==='live';liveBtn.classList.toggle('hidden',live);endBtn.classList.toggle('hidden',!live);document.querySelector('#studio-live-badge').classList.toggle('hidden',!live);document.querySelector('#public-link').href=`live.html?event=${m.id}`;}
-liveBtn.onclick=async()=>{if(!meeting)return;if(!currentStream&&!(await openCamera()))return;try{liveBtn.disabled=true;liveBtn.textContent='Connecting…';await publishStream(meeting.id,currentStream);publishing=true;await updateMeeting(meeting.id,{status:'live',liveStartedAt:new Date().toISOString(),mediaType:'livekit'});toast('You are LIVE 🔴');}catch(e){await stopPublish().catch(()=>{});publishing=false;toast(e.message);}finally{liveBtn.disabled=false;liveBtn.textContent='🔴 Go Live';}};
+liveBtn.onclick=async()=>{if(!meeting)return;if(!currentStream&&!(await openCamera()))return;try{liveBtn.disabled=true;liveBtn.textContent='Connecting…';await publishStream(meeting.id,currentStream);publishing=true;await resumeStudioAudio().catch(()=>{});await updateMeeting(meeting.id,{status:'live',liveStartedAt:new Date().toISOString(),mediaType:'livekit'});toast('You are LIVE 🔴');}catch(e){await stopPublish().catch(()=>{});publishing=false;toast(e.message);}finally{liveBtn.disabled=false;liveBtn.textContent='🔴 Go Live';}};
 endBtn.onclick=async()=>{try{await stopPublish();publishing=false;await updateMeeting(meeting.id,{status:'ended',endedAt:new Date().toISOString()});if(recording)await stopRecording('Broadcast ended. Local recording finalized.');toast('Broadcast ended ✅ It will disappear from listings after 24 hours.');}catch(e){toast(e.message)}};
 
 function renderComments(cs){comments.innerHTML=cs.length?cs.slice(-40).map(c=>`<div class="comment"><div class="comment-top"><span class="comment-name">${escapeHTML(c.name||'Guest')}</span></div><p>${escapeHTML(c.text)}</p></div>`).join(''):'<div class="muted center">Public comments will appear here 💬</div>';comments.scrollTop=comments.scrollHeight;}

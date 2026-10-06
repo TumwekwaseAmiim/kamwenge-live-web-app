@@ -1,69 +1,269 @@
 rules_version = '2';
+
 service cloud.firestore {
+
   match /databases/{database}/documents {
-    function signedIn(){ return request.auth != null; }
-    function userDoc(){ return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
-    function roleIs(r){ return signedIn() && userDoc().data.role == r; }
-    function broadcaster(){ return roleIs('broadcaster') || roleIs('admin'); }
-    function staff(){ return broadcaster() || roleIs('moderator'); }
-    function ownsMeeting(){ return signedIn() && resource.data.hostId == request.auth.uid; }
+
+
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+
+    function userDoc() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      );
+    }
+
+
+    function roleIs(role) {
+      return signedIn()
+        && userDoc().data.role == role;
+    }
+
+
+    function broadcaster() {
+      return roleIs('broadcaster')
+        || roleIs('admin');
+    }
+
+
+    function staff() {
+      return broadcaster()
+        || roleIs('moderator');
+    }
+
+
+    // Used on the meeting document itself.
+    function ownsMeeting() {
+      return signedIn()
+        && resource.data.hostId == request.auth.uid;
+    }
+
+
+    // Used inside meeting subcollections.
+    function ownsParentMeeting(meetingId) {
+
+      return signedIn()
+        && get(
+          /databases/$(database)/documents/meetings/$(meetingId)
+        ).data.hostId == request.auth.uid;
+
+    }
+
+
+    // =====================================================
+    // MEETINGS
+    // =====================================================
 
     match /meetings/{meetingId} {
+
+
+      // Public can discover/watch events.
       allow read: if true;
-      allow create: if broadcaster() && request.resource.data.hostId == request.auth.uid;
-      allow update: if broadcaster() && (ownsMeeting() || roleIs('admin'))
-                    && request.resource.data.hostId == resource.data.hostId;
-      allow delete: if roleIs('admin') || (roleIs('broadcaster') && ownsMeeting());
+
+
+      // Only broadcaster/admin can create.
+      // Broadcaster must own the meeting.
+      allow create: if broadcaster()
+        && request.resource.data.hostId == request.auth.uid;
+
+
+      // Broadcaster can update own event.
+      // Admin can update any event.
+      // hostId cannot be changed.
+      allow update: if broadcaster()
+        && (
+          ownsMeeting()
+          || roleIs('admin')
+        )
+        && request.resource.data.hostId
+          == resource.data.hostId;
+
+
+      // Owner broadcaster or admin can delete.
+      allow delete: if roleIs('admin')
+        || (
+          roleIs('broadcaster')
+          && ownsMeeting()
+        );
+
+
+      // ===================================================
+      // LIVE CHAT
+      // ===================================================
 
       match /comments/{commentId} {
+
+
         allow read: if true;
-        allow create: if request.resource.data.name is string
-                      && request.resource.data.name.size() <= 60
-                      && request.resource.data.text is string
-                      && request.resource.data.text.size() > 0
-                      && request.resource.data.text.size() <= 500;
+
+
+        allow create: if
+          request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 60
+
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+
+
         allow update: if false;
+
+
         allow delete: if staff();
+
       }
+
+
+      // ===================================================
+      // REACTIONS
+      // ===================================================
 
       match /reactionTotals/{reactionId} {
+
+
         allow read: if true;
-        allow create: if request.resource.data.count == 1;
-        allow update: if request.resource.data.count == resource.data.count + 1
-                      && request.resource.data.emoji == resource.data.emoji;
+
+
+        allow create: if
+          request.resource.data.count == 1
+          && request.resource.data.emoji is string;
+
+
+        allow update: if
+          request.resource.data.count
+            == resource.data.count + 1
+
+          && request.resource.data.emoji
+            == resource.data.emoji;
+
+
         allow delete: if false;
+
       }
 
+
+      // ===================================================
+      // REQUEST TO SPEAK
+      //
+      // Viewer:
+      //   creates pending request
+      //
+      // Broadcaster:
+      //   changes pending -> approved / declined
+      //
+      // Cloudflare Worker:
+      //   checks status + secretHash
+      // ===================================================
 
       match /speakerRequests/{requestId} {
+
+
+        // Currently public because the Cloudflare Worker
+        // reads this document using Firestore REST without
+        // a Firebase service account.
         allow read: if true;
-        allow create: if request.resource.data.name is string
-                      && request.resource.data.name.size() > 0
-                      && request.resource.data.name.size() <= 60
-                      && request.resource.data.secretHash is string
-                      && request.resource.data.secretHash.size() == 64
-                      && request.resource.data.status == 'pending';
-        allow update, delete: if staff() && (ownsMeeting() || roleIs('admin'));
+
+
+        // Viewer creates request.
+        allow create: if
+
+          request.resource.data.name is string
+
+          && request.resource.data.name.size() > 0
+
+          && request.resource.data.name.size() <= 60
+
+
+          && request.resource.data.secretHash is string
+
+          && request.resource.data.secretHash.size() == 64
+
+
+          && request.resource.data.status == 'pending';
+
+
+        // IMPORTANT FIX:
+        // Parent meeting ownership is checked here.
+        allow update, delete: if staff()
+          && (
+            ownsParentMeeting(meetingId)
+            || roleIs('admin')
+          );
+
       }
+
     }
+
+
+    // =====================================================
+    // USERS
+    // =====================================================
 
     match /users/{uid} {
+
+
       allow read: if true;
-      allow create: if signedIn() && request.auth.uid == uid
-                    && request.resource.data.role == 'viewer';
-      allow update: if signedIn() && request.auth.uid == uid
-                    && request.resource.data.role == resource.data.role;
-      allow update, create, delete: if roleIs('admin');
+
+
+      // New normal account starts as viewer.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == 'viewer';
+
+
+      // User may edit own profile,
+      // but cannot promote themselves.
+      allow update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role
+          == resource.data.role;
+
+
+      // Admin can manage users.
+      allow create, update, delete: if roleIs('admin');
+
     }
+
+
+    // =====================================================
+    // REPORTS
+    // =====================================================
 
     match /reports/{reportId} {
+
+
       allow create: if true;
-      allow read, update, delete: if roleIs('admin') || roleIs('moderator');
+
+
+      allow read, update, delete:
+        if roleIs('admin')
+        || roleIs('moderator');
+
     }
 
+
+    // =====================================================
+    // SETTINGS
+    // =====================================================
+
     match /settings/{docId} {
+
+
       allow read: if true;
+
+
       allow write: if roleIs('admin');
+
     }
+
   }
+
 }

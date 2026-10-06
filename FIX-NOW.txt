@@ -1,0 +1,15 @@
+KAMWENGE LIVE — FIX NOW
+
+1) Firebase rules MUST be deployed or "Missing or insufficient permissions" will appear when viewers request to speak:
+   firebase deploy --only firestore:rules
+
+2) Cloudflare Worker "kamwenge-live-token" should use the code in:
+   cloudflare/livekit-token-worker.js
+   Keep existing LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET variables/secrets.
+
+3) Push this project to GitHub Pages after deployment.
+
+Fixes included in this build:
+- Viewer no longer stays on "Connecting to live video..." when broadcaster video is already arriving under an older publisher identity.
+- Request-to-speak UI is now a clear action, not a text-like label.
+- Speaker flow stays aligned with the included Cloudflare Worker using requestId + secret verification.
