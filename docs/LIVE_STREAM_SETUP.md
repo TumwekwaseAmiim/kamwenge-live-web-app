@@ -1,62 +1,49 @@
-# Live Streaming Setup — LiveKit + Firebase Function
+# Kamwenge Live™ — Live Streaming Setup
 
-Kamwenge Live uses LiveKit as the actual WebRTC/SFU media layer so a broadcaster can use a phone/PC browser camera or share a screen without OBS/RTMP configuration.
+Kamwenge Live now uses **one Cloudflare Worker** for all LiveKit tokens: viewers, broadcasters and approved guest speakers. Firebase Functions are not required for LiveKit.
 
-## 1. Create a LiveKit project
-Create a project in LiveKit Cloud (or use your own LiveKit server). Obtain:
-- WebSocket URL, usually beginning `wss://`
-- API key
-- API secret
+## 1. Cloudflare Worker
 
-## 2. Install function dependencies
-From the project root:
+Open **Workers & Pages → kamwenge-live-token → Edit code** and replace the Worker with:
 
-```bash
-cd functions
-npm install
-cd ..
-```
+`cloudflare/livekit-token-worker.js`
 
-## 3. Set Firebase function secrets
-Run:
+Keep these existing Worker variables/secrets exactly as configured:
 
-```bash
-firebase functions:secrets:set LIVEKIT_API_KEY
-firebase functions:secrets:set LIVEKIT_API_SECRET
-firebase functions:secrets:set LIVEKIT_WS_URL
-```
+- `LIVEKIT_URL`
+- `LIVEKIT_API_KEY`
+- `LIVEKIT_API_SECRET`
 
-Enter each actual value when Firebase CLI asks.
+Then click **Deploy**.
 
-## 4. Deploy the token function
+The Worker verifies Firebase broadcaster ID tokens, checks event ownership, verifies approved anonymous speaker requests using the request secret hash, and issues the appropriate LiveKit token.
+
+## 2. Firestore rules
+
+Deploy the included rules from the project folder:
 
 ```bash
-firebase deploy --only functions:livekitToken
+firebase deploy --only firestore:rules
 ```
 
-Firebase will return an HTTPS URL for the function.
+## 3. Frontend endpoint
 
-## 5. Add the function URL
-Open `js/media-config.js` and set:
+`js/media-config.js` already points both normal and speaker token requests to:
 
-```js
-export const livekitConfig = {
-  tokenEndpoint: "https://YOUR-DEPLOYED-FUNCTION-URL"
-};
-```
+`https://kamwenge-live-token.tumwekwaseamiim.workers.dev`
 
-## 6. Test with two devices
-1. Broadcaster signs in.
-2. Create a meeting.
-3. Open Studio.
-4. Start Camera.
-5. Press Go Live.
-6. On a second phone/computer open the public event link.
-7. Confirm video/audio, comments and reactions.
-8. While LIVE, test Share Screen and switching back to camera.
-9. End Broadcast.
+No LiveKit API secret is stored in browser JavaScript.
 
-## Security design
-Publisher token requests include the broadcaster's Firebase ID token. The server function verifies the account and confirms that the user owns the Firestore meeting or has the admin role. Viewer tokens are subscribe-only.
+## 4. Speaker flow
 
-Never put the LiveKit API secret in `js/media-config.js` or any other frontend file.
+1. Viewer watches normally.
+2. Viewer taps **Request to Speak**.
+3. Broadcaster sees the request in Studio and taps **Allow**.
+4. Viewer taps **Join Microphone**.
+5. The Cloudflare Worker verifies the approved request and grants publishing rights.
+6. The speaker can use microphone, camera or screen sharing.
+7. Broadcaster can remove the speaker.
+
+## 5. Audio quality
+
+The frontend requests echo cancellation, noise suppression, automatic gain control, mono voice capture, 48 kHz where supported, and browser voice isolation where available. These settings can reduce wind/background noise, but severe outdoor wind cannot be guaranteed away by software; a physical microphone windscreen remains the best protection.

@@ -1,0 +1,25 @@
+KAMWENGE LIVE™ — NEXT DEPLOYMENT STEPS
+
+1) CLOUDFLARE LIVEKIT WORKER
+   Cloudflare > Workers & Pages > kamwenge-live-token > Edit code
+   Replace the code with: cloudflare/livekit-token-worker.js
+   Keep the existing LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET values.
+   Click Deploy.
+
+2) FIRESTORE RULES
+   From the project folder run:
+   firebase deploy --only firestore:rules
+
+3) WEBSITE
+   Push the complete project to your existing GitHub repository / GitHub Pages.
+
+4) PHONE TEST
+   Device A: broadcaster. Start camera, Go Live.
+   Device B: viewer. Tap Sound On, Request to Speak.
+   Device A: Allow the request.
+   Device B: Join Microphone, then optionally Camera or Share Screen.
+
+IMPORTANT
+- No Firebase Functions LiveKit secrets are required in this version.
+- Severe outdoor wind cannot be fully removed by software; the app enables the browser's strongest supported speech/noise controls.
+- Ended events remain in Firestore but disappear from the broadcaster dashboard after 24 hours; public discovery only promotes live/upcoming events.

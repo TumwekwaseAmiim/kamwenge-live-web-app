@@ -328,6 +328,9 @@
         </div>
 
 
+        <div id="viewer-guest-media" class="guest-media-grid hidden" aria-live="polite"></div>
+
+
         <!-- REACTIONS -->
 
         <div
@@ -386,6 +389,31 @@
 
         </div>
 
+
+        <!-- REQUEST TO SPEAK -->
+
+        <section class="speaker-card" id="speaker-card">
+          <div>
+            <span class="eyebrow">🎤 JOIN THE CONVERSATION</span>
+            <h3>Request to Speak</h3>
+            <p class="muted tiny">Ask the broadcaster for permission to join by microphone. Your microphone stays off until you are approved and you tap Join Microphone.</p>
+          </div>
+
+          <div id="speaker-request-form" class="speaker-request-form">
+            <input id="speaker-name" maxlength="60" placeholder="Your name">
+            <button id="request-to-speak" class="btn btn-primary" type="button">🎤 Request to Speak</button>
+          </div>
+
+          <div id="speaker-request-state" class="speaker-state hidden"></div>
+
+          <div id="speaker-join-actions" class="speaker-join-actions hidden">
+            <button id="join-speaker" class="btn btn-primary" type="button">🎙️ Join Microphone</button>
+            <button id="mute-speaker" class="btn btn-light hidden" type="button">🔇 Mute Me</button>
+            <button id="speaker-camera" class="btn btn-light hidden" type="button">📹 Camera</button>
+            <button id="speaker-screen" class="btn btn-light hidden" type="button">🖥️ Share Screen</button>
+            <button id="leave-speaker" class="btn btn-light hidden" type="button">Leave Speaking</button>
+          </div>
+        </section>
 
         <!-- PUBLIC BRAND NOTE -->
 

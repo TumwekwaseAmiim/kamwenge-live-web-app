@@ -1,4 +1,4 @@
-const CACHE = 'kamwenge-live-clean-v1';
+const CACHE = 'kamwenge-live-v2-1';
 
 
 // =====================================================

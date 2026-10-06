@@ -8,7 +8,7 @@ This is the complete backend-connected project structure for Kamwenge Live. It r
 ## What is implemented
 
 ### Public experience
-- Public Home page with LIVE, Upcoming and Ended events
+- Public Home page with LIVE and Upcoming events; ended direct links show the ended state
 - One public event link from countdown → LIVE → ended
 - Realtime live video/audio viewing
 - Broadcaster profile photo, name and bio beside the event
@@ -35,7 +35,7 @@ This is the complete backend-connected project structure for Kamwenge Live. It r
 ### Backend/services
 - Firebase Authentication → login/identity
 - Cloud Firestore → profiles, roles, meetings, status, comments, reactions
-- Firebase Function → securely issues short-lived LiveKit room tokens
+- Cloudflare `kamwenge-live-token` Worker → securely issues short-lived LiveKit room tokens
 - LiveKit → actual browser camera/screen WebRTC live video delivery
 - Cloudinary → broadcaster profile photo only
 
@@ -46,16 +46,15 @@ Recordings remain on the broadcaster's own device. Firebase does not transport v
 
 ## Configuration files
 - `js/firebase-config.js` → Firebase Web App config
-- `js/media-config.js` → Cloudinary public upload values + deployed LiveKit token-function URL
+- `js/media-config.js` → Cloudinary public upload values + Cloudflare LiveKit token Worker URL
 - `firestore.rules` → Firestore security rules
-- `functions/index.js` → secure LiveKit token endpoint
-- `functions/package.json` → Firebase Functions dependencies
+- `cloudflare/livekit-token-worker.js` → LiveKit token Worker for viewers, broadcasters and approved speakers
 
 ## Setup order
 1. Configure Firebase using `docs/FIREBASE_SETUP.md`.
 2. Configure Cloudinary profile-photo upload using `docs/CLOUDINARY_SETUP.md`.
-3. Create a LiveKit project and deploy the Firebase token function using `docs/LIVE_STREAM_SETUP.md`.
-4. Put the deployed token-function URL in `js/media-config.js`.
+3. Deploy/update the Cloudflare LiveKit token Worker using `docs/LIVE_STREAM_SETUP.md`.
+4. Confirm `js/media-config.js` points to your `kamwenge-live-token` Worker.
 5. Test one broadcaster + a second viewer device.
 6. Deploy the web app over HTTPS.
 
@@ -68,4 +67,25 @@ The public live page now includes an explicit **Tap for Sound** control because 
 
 The installed PWA icon is supplied by `manifest.webmanifest` from `assets/icons/icon-192.png` and `icon-512.png`. After changing/deploying icons, an already-installed copy may need to be uninstalled and installed again before the phone launcher refreshes the icon.
 
-Event links are currently shared through the Cloudflare share worker configured in `js/home.js` and `js/live.js`. For WhatsApp/Facebook/X preview cards to show the event title/image instead of a plain URL, that worker must return Open Graph metadata (`og:title`, `og:description`, `og:image`) before redirecting/serving the live page. The worker source is not part of this frontend ZIP, so deploy/update that worker separately.
+Event links are currently shared through the Cloudflare share worker configured in `js/home.js` and `js/live.js`. For WhatsApp/Facebook/X preview cards to show the event title/image instead of a plain URL, that worker must return Open Graph metadata (`og:title`, `og:description`, `og:image`) before redirecting/serving the live page. The social-share Worker remains a separate Cloudflare Worker. The LiveKit token Worker source is included under `cloudflare/livekit-token-worker.js`.
+
+## Interactive Live Room (Oct 2026)
+- Viewer Request to Speak workflow with broadcaster Allow/Decline.
+- Up to 4 approved guest speakers.
+- Approved guests join microphone through LiveKit and can mute/leave.
+- Broadcaster hears approved speakers and can remove them.
+- Existing real-time Firestore chat and reactions retained.
+- Mobile live-room layout improved.
+- Fullscreen and viewer sound controls retained.
+- PWA icon/manifest retained.
+
+
+## Kamwenge Live 2.1 interactive upgrades
+
+- Real-time LiveKit video/audio with Firebase chat and reactions.
+- Viewers can request to speak; broadcaster approves up to four guest speakers.
+- Approved speakers can use microphone, camera, or screen sharing.
+- Broadcaster and viewers have fullscreen controls; guest media can also be tapped for fullscreen.
+- Microphone capture requests echo cancellation, noise suppression, automatic gain control, mono speech capture, and voice isolation where the browser supports it. This reduces background/wind noise but cannot guarantee removal of severe wind; a physical windscreen is still recommended outdoors.
+- Ended events stay in Firestore for records but disappear from public/home and broadcaster dashboard listings after 24 hours. Direct event links can still show the ended state.
+- The Cloudflare worker in `cloudflare/livekit-token-worker.js` is the matching token service for this frontend. Deploy it to `kamwenge-live-token` while keeping your existing LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET variables/secrets.

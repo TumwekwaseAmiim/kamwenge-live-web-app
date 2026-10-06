@@ -89,6 +89,28 @@ function getMeetingDate(
 
 
 // =====================================================
+// EVENT VISIBILITY
+// Ended events remain in Firestore for records, but disappear
+// from public discovery 24 hours after they end.
+// =====================================================
+
+const ENDED_VISIBLE_FOR_MS = 24 * 60 * 60 * 1000;
+
+function endedAtDate(meeting) {
+  const value = meeting?.endedAt;
+  if (!value) return null;
+  const date = asDate(value);
+  return date instanceof Date && !Number.isNaN(date.getTime()) ? date : null;
+}
+
+function isPubliclyVisible(meeting, now = Date.now()) {
+  if (meeting?.status !== 'ended') return true;
+  const ended = endedAtDate(meeting);
+  if (!ended) return false;
+  return now - ended.getTime() < ENDED_VISIBLE_FOR_MS;
+}
+
+// =====================================================
 // SHARE URL
 // =====================================================
 
@@ -480,6 +502,8 @@ function render(
 
   const now =
     Date.now();
+
+  meetings = meetings.filter(meeting => isPubliclyVisible(meeting, now));
 
 
   // ===================================================

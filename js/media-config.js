@@ -25,7 +25,13 @@ export const cloudinaryConfigured =
 // never in this frontend file.
 // -----------------------------------------------------
 export const livekitConfig = {
+  // Existing endpoint keeps normal broadcaster/viewer streaming working.
   tokenEndpoint:
+    "https://kamwenge-live-token.tumwekwaseamiim.workers.dev",
+
+  // Interactive speaker endpoint. The same Cloudflare Worker securely verifies
+  // approved speaker requests before granting publish permission.
+  speakerTokenEndpoint:
     "https://kamwenge-live-token.tumwekwaseamiim.workers.dev"
 };
 

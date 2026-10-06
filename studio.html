@@ -261,6 +261,8 @@
 
         </div>
 
+        <div id="studio-guest-media" class="guest-media-grid hidden" aria-live="polite"></div>
+
 
         <!-- CONTROLS -->
 
@@ -299,6 +301,14 @@
             type="button"
           >
             🖥️ Share Screen
+          </button>
+
+          <button
+            id="studio-fullscreen"
+            class="control"
+            type="button"
+          >
+            ⛶ Full Screen
           </button>
 
 
@@ -411,10 +421,27 @@
 
 
       <!-- =================================================
-           PUBLIC COMMENTS
+           SPEAKER REQUESTS + PUBLIC COMMENTS
       ================================================== -->
 
-      <aside class="panel chat">
+      <aside class="studio-side-stack">
+
+        <section class="panel speaker-manager">
+          <div class="speaker-manager-head">
+            <div>
+              <span class="eyebrow">🎤 LIVE SPEAKERS</span>
+              <h3>Speaker Requests</h3>
+            </div>
+            <span class="speaker-count" id="speaker-count">0 / 4</span>
+          </div>
+          <p class="tiny muted">Approve only people you want to hear live. Up to four guest speakers can be approved at a time.</p>
+          <div id="speaker-requests" class="speaker-request-list">
+            <div class="muted center">No speaker requests yet.</div>
+          </div>
+          <div id="active-speakers" class="active-speakers"></div>
+        </section>
+
+        <section class="panel chat">
 
         <h3>
           💬 Public Comments
@@ -429,6 +456,8 @@
           id="studio-comments"
           class="chat-list"
         ></div>
+
+        </section>
 
       </aside>
 

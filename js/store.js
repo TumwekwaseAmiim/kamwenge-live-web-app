@@ -70,3 +70,20 @@ export async function react(meetingId,emoji){
   ready(); const allowed=['❤️','👍','👏','😂','🔥']; if(!allowed.includes(emoji)) return;
   await setDoc(doc(db,'meetings',meetingId,'reactionTotals',encodeURIComponent(emoji)),{emoji,count:increment(1)},{merge:true});
 }
+
+export async function createSpeakerRequest(meetingId,{name,secretHash}){
+  ready();
+  const ref=doc(collection(db,'meetings',meetingId,'speakerRequests'));
+  await setDoc(ref,{name:String(name||'Viewer').trim().slice(0,60),secretHash:String(secretHash||''),status:'pending',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+  return ref.id;
+}
+export function watchSpeakerRequest(meetingId,requestId,callback,onError=console.error){
+  ready(); return onSnapshot(doc(db,'meetings',meetingId,'speakerRequests',requestId),s=>callback(s.exists()?mapDoc(s):null),onError);
+}
+export function watchSpeakerRequests(meetingId,callback,onError=console.error){
+  ready(); const q=query(collection(db,'meetings',meetingId,'speakerRequests'),orderBy('createdAt','asc'),limit(100));
+  return onSnapshot(q,s=>callback(s.docs.map(mapDoc)),onError);
+}
+export async function updateSpeakerRequest(meetingId,requestId,patch){
+  ready(); await updateDoc(doc(db,'meetings',meetingId,'speakerRequests',requestId),{...patch,updatedAt:serverTimestamp()});
+}
