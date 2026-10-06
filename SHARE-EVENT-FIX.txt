@@ -1,0 +1,17 @@
+KAMWENGE LIVE™ — SHARE EVENT FIX
+
+What changed
+- Broadcaster Studio now shows a visible Share Event card.
+- Event title and description are visible in the Studio share card.
+- Copy Link copies the branded Cloudflare event URL.
+- WhatsApp shares title + description + date/time + branded link.
+- Share uses the phone/browser native share sheet where supported.
+- Open Public Event still opens the raw viewer page for testing.
+- The Cloudflare share Worker reads the Firestore event description and puts it into Open Graph metadata.
+- A version query is added by the Studio to help social apps refresh cached previews.
+
+Deploy
+1. Push the updated website files to GitHub Pages.
+2. In Cloudflare, update the SOCIAL SHARE Worker (not kamwenge-live-token) with cloudflare/share-worker.js and Deploy.
+3. Keep kamwenge-live-token unchanged.
+4. Create/open an event and use the Share Event card in Studio.

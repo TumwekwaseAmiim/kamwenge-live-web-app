@@ -188,15 +188,30 @@
       </p>
 
 
-      <a
-        id="public-link"
-        class="btn btn-light"
-        href="#"
-        target="_blank"
-        rel="noopener"
-      >
-        👁 Open Public Event
-      </a>
+      <section class="studio-share-card" aria-label="Share this event">
+        <div class="studio-share-head">
+          <div>
+            <span class="eyebrow">🔗 SHARE EVENT</span>
+            <strong id="share-event-title">Your event link</strong>
+          </div>
+          <span id="share-event-status" class="share-event-status">Ready</span>
+        </div>
+
+        <p id="share-event-description" class="studio-share-description">
+          Your event description will appear here and in the text you share.
+        </p>
+
+        <div class="share-link-box">
+          <input id="share-event-link" type="text" value="" readonly aria-label="Branded event share link">
+          <button id="copy-share-link" class="btn btn-light" type="button">📋 Copy Link</button>
+        </div>
+
+        <div class="studio-share-actions">
+          <button id="share-whatsapp" class="btn btn-primary" type="button">💬 WhatsApp</button>
+          <button id="share-native" class="btn btn-light" type="button">↗ Share</button>
+          <a id="public-link" class="btn btn-light" href="#" target="_blank" rel="noopener">👁 Open Public Event</a>
+        </div>
+      </section>
 
     </section>
 

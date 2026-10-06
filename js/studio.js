@@ -5,11 +5,13 @@ import {escapeHTML,toast} from './app.js';
 
 const MAX_SPEAKERS=4;
 const ACTIVE_EVENT_KEY='kamwengeLiveActiveEvent';
+const SHARE_WORKER='https://rwamwanja-kamwenge-live.tumwekwaseamiim.workers.dev';
 const eventId=new URLSearchParams(location.search).get('event');
 const video=document.querySelector('#studio-video'),placeholder=document.querySelector('#studio-placeholder'),sourceLabel=document.querySelector('#source-label'),videoShell=video?.closest('.video-shell');
 const startBtn=document.querySelector('#start-camera'),switchBtn=document.querySelector('#switch-camera'),screenBtn=document.querySelector('#share-screen'),fullscreenBtn=document.querySelector('#studio-fullscreen'),micBtn=document.querySelector('#toggle-mic'),guestAudioBtn=document.querySelector('#studio-audio'),liveBtn=document.querySelector('#go-live'),endBtn=document.querySelector('#end-live');
 const recordBtn=document.querySelector('#record-device'),recordState=document.querySelector('#record-state'),storageText=document.querySelector('#storage-text'),storageBar=document.querySelector('#storage-bar'),comments=document.querySelector('#studio-comments');
 const requestList=document.querySelector('#speaker-requests'),activeSpeakers=document.querySelector('#active-speakers'),speakerCount=document.querySelector('#speaker-count'),guestMedia=document.querySelector('#studio-guest-media');
+const shareTitle=document.querySelector('#share-event-title'),shareDescription=document.querySelector('#share-event-description'),shareLinkInput=document.querySelector('#share-event-link'),copyShareBtn=document.querySelector('#copy-share-link'),whatsAppBtn=document.querySelector('#share-whatsapp'),nativeShareBtn=document.querySelector('#share-native'),shareStatus=document.querySelector('#share-event-status'),publicLink=document.querySelector('#public-link');
 let session,meeting,cameraStream=null,currentStream=null,facing='environment',recorder=null,writable=null,recording=false,recordTimer=null,recordStartedAt=0,publishing=false;
 let speakerRequests=[],roomParticipants=[];
 function saveActiveEvent(){if(!meeting?.id)return;localStorage.setItem(ACTIVE_EVENT_KEY,JSON.stringify({eventId:meeting.id,status:'live',role:'broadcaster',updatedAt:Date.now()}));}
@@ -26,6 +28,27 @@ async function enableStudioGuestSound(){
   }catch{toast('Tap again to enable guest sound.');}
 }
 guestAudioBtn?.addEventListener('click',enableStudioGuestSound);
+copyShareBtn?.addEventListener('click',async()=>{
+  if(!meeting)return;
+  const link=brandedShareUrl(meeting);
+  try{await navigator.clipboard.writeText(link);toast('Branded event link copied ✅');}
+  catch{shareLinkInput?.select();document.execCommand?.('copy');toast('Event link copied ✅');}
+});
+whatsAppBtn?.addEventListener('click',()=>{
+  if(!meeting)return;
+  const url=`https://wa.me/?text=${encodeURIComponent(shareMessage(meeting))}`;
+  window.open(url,'_blank','noopener');
+});
+nativeShareBtn?.addEventListener('click',async()=>{
+  if(!meeting)return;
+  const url=brandedShareUrl(meeting),text=String(meeting.description||'Join this live event on Kamwenge Live™.').trim();
+  if(navigator.share){
+    try{await navigator.share({title:meeting.title||'Kamwenge Live Event',text,url});return;}catch(e){if(e?.name==='AbortError')return;}
+  }
+  try{await navigator.clipboard.writeText(shareMessage(meeting));toast('Share text copied ✅');}
+  catch{toast('Use Copy Link or WhatsApp to share this event.');}
+});
+
 // Any deliberate tap in Studio is also a chance to satisfy mobile browser audio policies.
 document.addEventListener('pointerdown',()=>{if(publishing)resumeStudioAudio().catch(()=>{});},{passive:true});
 
@@ -60,7 +83,35 @@ if(screenBtn&&!navigator.mediaDevices?.getDisplayMedia){screenBtn.disabled=true;
 screenBtn.onclick=async()=>{if(!navigator.mediaDevices?.getDisplayMedia)return toast('Screen sharing is not supported in this browser. Camera and microphone still work normally.');try{const screen=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:20,max:30}},audio:false});const mic=cameraStream?.getAudioTracks()?.[0];if(mic)screen.addTrack(mic);setPreview(screen,'🖥️ Shared screen • Microphone live');await refreshPublicStream();screen.getVideoTracks()[0].addEventListener('ended',async()=>{if(cameraStream){setPreview(cameraStream,facing==='environment'?'📷 Back camera • Clear Voice':'🤳 Front camera • Clear Voice');await refreshPublicStream();}},{once:true});}catch(e){if(e?.name!=='AbortError')toast('Could not start screen sharing.');}};
 fullscreenBtn?.addEventListener('click',async()=>{const target=videoShell||video;try{if(document.fullscreenElement||document.webkitFullscreenElement){if(document.exitFullscreen)await document.exitFullscreen();else document.webkitExitFullscreen?.();return;}if(target?.requestFullscreen)await target.requestFullscreen();else if(target?.webkitRequestFullscreen)target.webkitRequestFullscreen();else if(video?.webkitEnterFullscreen)video.webkitEnterFullscreen();else toast('Fullscreen is not supported on this device.');}catch{toast('Could not open fullscreen.');}});
 
-function syncEvent(m){if(!m)return;meeting=m;if(m.status==='live')saveActiveEvent();else if(m.status==='ended')clearActiveEvent();document.querySelector('#studio-title').textContent=m.title;const live=m.status==='live';liveBtn.classList.toggle('hidden',live);endBtn.classList.toggle('hidden',!live);document.querySelector('#studio-live-badge').classList.toggle('hidden',!live);document.querySelector('#public-link').href=`live.html?event=${m.id}`;}
+function formatShareDate(value){
+  if(!value)return '';
+  const d=typeof value?.toDate==='function'?value.toDate():new Date(value);
+  if(Number.isNaN(d.getTime()))return '';
+  return new Intl.DateTimeFormat('en-UG',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true,timeZone:'Africa/Kampala'}).format(d);
+}
+function brandedShareUrl(m){
+  const base=String(m?.shareUrl||`${SHARE_WORKER}/${encodeURIComponent(m?.id||eventId||'')}`).replace(/[?&]v=[^&]*/g,'');
+  const version=m?.updatedAt?.seconds||m?.updatedAt?.toMillis?.()||Date.now();
+  return `${base}${base.includes('?')?'&':'?'}v=${encodeURIComponent(version)}`;
+}
+function shareMessage(m){
+  const title=String(m?.title||'Kamwenge Live Event').trim();
+  const desc=String(m?.description||'Join this live event on Kamwenge Live™.').trim();
+  const when=formatShareDate(m?.scheduledAt);
+  const link=brandedShareUrl(m);
+  return `${title}\n${desc}${when?`\n📅 ${when}`:''}\n\nWatch on Kamwenge Live™:\n${link}`;
+}
+function renderSharePanel(m){
+  if(!m)return;
+  const link=brandedShareUrl(m);
+  const desc=String(m.description||'Join this live event on Kamwenge Live™.').trim();
+  if(shareTitle)shareTitle.textContent=m.title||'Kamwenge Live Event';
+  if(shareDescription)shareDescription.textContent=desc;
+  if(shareLinkInput)shareLinkInput.value=link;
+  if(shareStatus)shareStatus.textContent=m.status==='live'?'🔴 LIVE':m.status==='ended'?'Ended':'Upcoming';
+  if(publicLink)publicLink.href=`live.html?event=${encodeURIComponent(m.id)}`;
+}
+function syncEvent(m){if(!m)return;meeting=m;if(m.status==='live')saveActiveEvent();else if(m.status==='ended')clearActiveEvent();document.querySelector('#studio-title').textContent=m.title;const live=m.status==='live';liveBtn.classList.toggle('hidden',live);endBtn.classList.toggle('hidden',!live);document.querySelector('#studio-live-badge').classList.toggle('hidden',!live);renderSharePanel(m);}
 liveBtn.onclick=async()=>{if(!meeting)return;if(!currentStream&&!(await openCamera()))return;try{liveBtn.disabled=true;liveBtn.textContent='Connecting…';await publishStream(meeting.id,currentStream);publishing=true;saveActiveEvent();await resumeStudioAudio().catch(()=>{});await updateMeeting(meeting.id,{status:'live',liveStartedAt:new Date().toISOString(),mediaType:'livekit'});toast('You are LIVE 🔴');}catch(e){await stopPublish().catch(()=>{});publishing=false;toast(e.message);}finally{liveBtn.disabled=false;liveBtn.textContent='🔴 Go Live';}};
 endBtn.onclick=async()=>{try{await stopPublish();publishing=false;clearActiveEvent();await updateMeeting(meeting.id,{status:'ended',endedAt:new Date().toISOString()});if(recording)await stopRecording('Broadcast ended. Local recording finalized.');toast('Broadcast ended ✅ It will disappear from listings after 24 hours.');}catch(e){toast(e.message)}};
 
