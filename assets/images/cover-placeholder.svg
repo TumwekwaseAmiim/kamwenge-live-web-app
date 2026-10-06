@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5B2C83"/><stop offset=".55" stop-color="#7C3AED"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs>
+<rect width="1200" height="630" rx="28" fill="url(#g)"/>
+<circle cx="985" cy="130" r="86" fill="#EF233C" opacity=".9"/>
+<circle cx="1080" cy="230" r="140" fill="#fff" opacity=".08"/>
+<circle cx="120" cy="540" r="180" fill="#fff" opacity=".08"/>
+<text x="86" y="270" font-family="Arial" font-weight="800" font-size="82" fill="#fff">KAMWENGE LIVE™</text>
+<text x="90" y="345" font-family="Arial" font-size="36" fill="#fff">Homegrown in Uganda. Built to Compete Globally.</text>
+<text x="90" y="425" font-family="Arial" font-size="28" fill="#fff">🎥 Live • 💬 Interact • 🔗 Share</text>
+</svg>

@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="theme-color"
+    content="#5B2C83"
+  >
+
+  <title>
+    Broadcaster Studio • Kamwenge Live™
+  </title>
+
+  <link
+    rel="icon"
+    href="assets/icons/icon.svg"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+
+<body>
+
+  <!-- =====================================================
+       TOP STRIP
+  ====================================================== -->
+
+  <div class="top-strip">
+    🎥 Private Broadcaster Studio — viewers never see these controls
+  </div>
+
+
+  <!-- =====================================================
+       NAVIGATION
+  ====================================================== -->
+
+  <nav class="nav">
+
+    <div class="container nav-inner">
+
+      <a
+        class="brand"
+        href="index.html"
+      >
+
+        <span class="brand-mark">
+          ▶
+        </span>
+
+        <span>
+          KAMWENGE
+          <span class="brand-live">
+            LIVE
+          </span>™
+        </span>
+
+      </a>
+
+
+      <button
+        class="menu-btn"
+        aria-label="Open navigation menu"
+      >
+        ☰
+      </button>
+
+
+      <div class="nav-links">
+
+        <a href="dashboard.html">
+          📋 Dashboard
+        </a>
+
+        <a href="create.html">
+          ➕ Meetings
+        </a>
+
+        <a
+          class="active"
+          href="#"
+        >
+          🎥 Studio
+        </a>
+
+        <a href="profile.html">
+          👤 Profile
+        </a>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
+  <main class="container">
+
+
+    <!-- ===================================================
+         STUDIO HEADER
+    ==================================================== -->
+
+    <section class="page-hero">
+
+      <div
+        style="
+          display:flex;
+          gap:9px;
+          align-items:center;
+          flex-wrap:wrap;
+        "
+      >
+
+        <span class="eyebrow">
+          🎥 BROADCASTER STUDIO
+        </span>
+
+
+        <span
+          id="studio-live-badge"
+          class="live-pill hidden"
+        >
+
+          <span class="live-dot"></span>
+
+          YOU ARE LIVE
+
+        </span>
+
+      </div>
+
+
+      <h1 id="studio-title">
+        Loading…
+      </h1>
+
+
+      <!-- BROADCASTER PROFILE -->
+
+      <div class="host-row">
+
+        <img
+          id="studio-host-photo"
+          class="host-avatar"
+          src="assets/images/avatar-placeholder.svg"
+          alt="Broadcaster profile photo"
+        >
+
+        <div>
+
+          <strong id="studio-host-name">
+            Broadcaster
+          </strong>
+
+          <span>
+            Kamwenge Live™ Broadcaster
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <p>
+        Your public broadcaster profile identifies you to viewers.
+        Your camera, microphone, recording and screen-sharing controls
+        remain private inside this Studio.
+      </p>
+
+
+      <a
+        id="public-link"
+        class="btn btn-light"
+        href="#"
+        target="_blank"
+        rel="noopener"
+      >
+        👁 Open Public Event
+      </a>
+
+    </section>
+
+
+    <!-- ===================================================
+         MAIN STUDIO LAYOUT
+    ==================================================== -->
+
+    <section class="layout-2">
+
+
+      <!-- =================================================
+           VIDEO + CONTROLS
+      ================================================== -->
+
+      <div>
+
+
+        <!-- VIDEO -->
+
+        <div class="video-shell">
+
+          <video
+            id="studio-video"
+            playsinline
+            autoplay
+            muted
+          ></video>
+
+
+          <div
+            id="studio-placeholder"
+            class="video-placeholder"
+          >
+
+            <div>
+
+              <div class="big">
+                🎥
+              </div>
+
+              <h2>
+                Start your camera when you're ready
+              </h2>
+
+              <p>
+                Nothing changes publicly until you press
+                <strong>Go Live</strong>.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="source-label"
+            class="source-label"
+          >
+            No source
+          </div>
+
+        </div>
+
+
+        <!-- CONTROLS -->
+
+        <div class="controls">
+
+          <button
+            id="start-camera"
+            class="control"
+            type="button"
+          >
+            🎥 Camera
+          </button>
+
+
+          <button
+            id="switch-camera"
+            class="control"
+            type="button"
+          >
+            🔄 Switch Camera
+          </button>
+
+
+          <button
+            id="toggle-mic"
+            class="control"
+            type="button"
+          >
+            🎤 Mute
+          </button>
+
+
+          <button
+            id="share-screen"
+            class="control"
+            type="button"
+          >
+            🖥️ Share Screen
+          </button>
+
+
+          <button
+            id="go-live"
+            class="control danger"
+            type="button"
+          >
+            🔴 Go Live
+          </button>
+
+
+          <button
+            id="end-live"
+            class="control danger hidden"
+            type="button"
+          >
+            ■ End Broadcast
+          </button>
+
+        </div>
+
+
+        <!-- =================================================
+             RECORDING
+        ================================================== -->
+
+        <div class="record-panel">
+
+          <div class="record-status">
+
+            <div
+              id="record-state"
+              class="record-indicator"
+            >
+
+              <span class="dot"></span>
+
+              <div>
+
+                <strong>
+                  Not recording
+                </strong>
+
+                <div>
+                  <small>
+                    00:00
+                  </small>
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <button
+              id="record-device"
+              class="btn btn-light"
+              type="button"
+            >
+              ⏺ Record to Device
+            </button>
+
+          </div>
+
+
+          <div class="storage-meter">
+
+            <span id="storage-bar"></span>
+
+          </div>
+
+
+          <div
+            id="storage-text"
+            class="tiny muted"
+            style="margin-top:7px"
+          >
+            Checking storage estimate…
+          </div>
+
+
+          <p class="tiny muted">
+            🔒 Recording is saved to the file or storage location
+            selected on your own device. Kamwenge Live™ does not
+            automatically upload it as a replay.
+          </p>
+
+        </div>
+
+
+        <!-- =================================================
+             BRAND NOTE
+        ================================================== -->
+
+        <div class="studio-brand-note">
+
+          <h3>
+            📡 Kamwenge Live™ Broadcast Studio
+          </h3>
+
+          <p>
+            Broadcast with your camera or screen, interact with viewers
+            and keep control of your own recording.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           PUBLIC COMMENTS
+      ================================================== -->
+
+      <aside class="panel chat">
+
+        <h3>
+          💬 Public Comments
+        </h3>
+
+        <p class="tiny muted">
+          Viewer comments appear here while your event is active.
+        </p>
+
+
+        <div
+          id="studio-comments"
+          class="chat-list"
+        ></div>
+
+      </aside>
+
+    </section>
+
+
+    <!-- ===================================================
+         STUDIO INFORMATION
+    ==================================================== -->
+
+    <section class="section">
+
+      <div class="panel">
+
+        <span class="eyebrow">
+          🚀 BUILT FOR SIMPLE LIVE BROADCASTING
+        </span>
+
+        <h2>
+          Your broadcast. Your audience. Your control.
+        </h2>
+
+        <p class="muted">
+          Kamwenge Live™ gives broadcasters a private control space
+          while viewers watch through a clean public event page.
+          Switch between your camera and screen, manage your microphone,
+          interact with viewers and record directly to your own device.
+        </p>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+  <footer class="site-footer">
+
+    <div class="container">
+
+      <p>
+        <strong>
+          Kamwenge Live™
+        </strong>
+        — Homegrown in Uganda.
+        Built to Compete Globally.
+      </p>
+
+      <p>
+        Concept, Design & Development:
+        <strong>
+          Eng. Amiim Tumwekwase
+        </strong>
+      </p>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script
+    type="module"
+    src="js/app.js"
+  ></script>
+
+  <script
+    type="module"
+    src="js/studio.js"
+  ></script>
+
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+{
+  "functions": [{"source":"functions","codebase":"default"}],
+  "firestore": {"rules":"firestore.rules"},
+  "hosting": {
+    "public":".",
+    "ignore":["firebase.json","**/.*","**/node_modules/**","functions/**","docs/**"],
+    "headers":[
+      {"source":"**/*.js","headers":[{"key":"Cache-Control","value":"no-cache"}]}
+    ]
+  }
+}

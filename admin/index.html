@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="theme-color"
+    content="#5B2C83"
+  >
+
+  <title>
+    Administration • Kamwenge Live™
+  </title>
+
+  <link
+    rel="icon"
+    href="../assets/icons/icon.svg"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../css/style.css"
+  >
+</head>
+
+
+<body>
+
+  <div class="dashboard-shell">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar">
+
+      <div class="side-brand">
+
+        <span class="brand-mark">
+          ▶
+        </span>
+
+        <span>
+          KAMWENGE LIVE™
+        </span>
+
+      </div>
+
+
+      <nav class="side-nav">
+
+        <a
+          class="active"
+          href="#"
+        >
+          📊 Overview
+        </a>
+
+        <a href="../create.html">
+          ➕ Create Meeting
+        </a>
+
+        <a href="../dashboard.html">
+          🎥 Broadcaster Dashboard
+        </a>
+
+        <a href="#meetings">
+          📅 Meetings
+        </a>
+
+        <a href="../profile.html">
+          👤 My Profile
+        </a>
+
+        <a href="../about.html">
+          ✨ About
+        </a>
+
+        <a href="../index.html">
+          🌐 Public Site
+        </a>
+
+      </nav>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN ADMIN AREA
+    ====================================================== -->
+
+    <main class="dash-main">
+
+
+      <!-- ===================================================
+           HEADER
+      ==================================================== -->
+
+      <div class="dash-head">
+
+        <div>
+
+          <span class="eyebrow">
+            ⚙️ SYSTEM ADMINISTRATION
+          </span>
+
+          <h1>
+            Kamwenge Live™ Control Centre
+          </h1>
+
+          <p class="muted">
+            Manage meetings, monitor live broadcasts
+            and oversee the platform from one place.
+          </p>
+
+        </div>
+
+
+        <a
+          class="btn btn-primary"
+          href="../create.html"
+        >
+          ➕ New Meeting
+        </a>
+
+      </div>
+
+
+      <!-- ===================================================
+           STATISTICS
+      ==================================================== -->
+
+      <section class="stats">
+
+        <div class="stat">
+
+          <div class="label">
+            All Events
+          </div>
+
+          <div
+            class="value"
+            id="stat-total"
+          >
+            0
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <div class="label">
+            🔴 Live Now
+          </div>
+
+          <div
+            class="value"
+            id="stat-live"
+          >
+            0
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <div class="label">
+            ⏳ Upcoming
+          </div>
+
+          <div
+            class="value"
+            id="stat-upcoming"
+          >
+            0
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <div class="label">
+            ✅ Ended
+          </div>
+
+          <div
+            class="value"
+            id="stat-ended"
+          >
+            0
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           MEETINGS
+      ==================================================== -->
+
+      <section
+        class="admin-card"
+        id="meetings"
+      >
+
+        <div class="section-title">
+
+          <div>
+
+            <h2>
+              📅 Meetings
+            </h2>
+
+            <p>
+              Open the broadcaster studio,
+              view event information or manage
+              meeting records.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+          <table class="table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Event
+                </th>
+
+                <th>
+                  Host
+                </th>
+
+                <th>
+                  Schedule
+                </th>
+
+                <th>
+                  Status
+                </th>
+
+                <th>
+                  Actions
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody id="meeting-table">
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           ADMIN TOOLS
+      ==================================================== -->
+
+      <section class="section">
+
+        <div class="admin-grid">
+
+
+          <!-- MODERATION -->
+
+          <div class="admin-card">
+
+            <span class="eyebrow">
+              🛡️ PLATFORM CONTROL
+            </span>
+
+            <h3>
+              Moderation
+            </h3>
+
+            <p class="muted">
+              Review public participation,
+              manage inappropriate comments
+              and maintain a respectful environment
+              across Kamwenge Live™ events.
+            </p>
+
+            <p class="tiny muted">
+              Additional moderation tools such as
+              reports, blocking and activity history
+              can be added as the platform grows.
+            </p>
+
+          </div>
+
+
+          <!-- BROADCASTING -->
+
+          <div class="admin-card">
+
+            <span class="eyebrow">
+              📡 LIVE BROADCASTING
+            </span>
+
+            <h3>
+              Broadcast Operations
+            </h3>
+
+            <p class="muted">
+              Broadcasters can create events,
+              enter their private studio,
+              use camera or screen sharing
+              and deliver live video to viewers.
+            </p>
+
+            <p class="tiny muted">
+              Recordings remain under the broadcaster's
+              control and are not automatically published
+              as replays.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           BRAND / PLATFORM INFO
+      ==================================================== -->
+
+      <section class="section">
+
+        <div class="panel brand-statement">
+
+          <div class="brand-statement-icon">
+            ▶
+          </div>
+
+
+          <div>
+
+            <h2>
+              KAMWENGE
+              <span class="brand-live">
+                LIVE
+              </span>™
+            </h2>
+
+
+            <p>
+              <strong>
+                Homegrown in Uganda.
+                Built to Compete Globally.
+              </strong>
+            </p>
+
+
+            <p class="muted">
+              A locally conceived live broadcasting
+              platform designed for simple,
+              accessible and interactive digital events.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ===================================================
+           DEVELOPER CREDIT
+      ==================================================== -->
+
+      <section class="section">
+
+        <div class="panel">
+
+          <span class="eyebrow">
+            👨🏽‍💻 PLATFORM DEVELOPMENT
+          </span>
+
+          <h2>
+            Concept, Design & Development
+          </h2>
+
+          <p>
+            <strong>
+              Eng. Amiim Tumwekwase
+            </strong>
+          </p>
+
+          <p class="muted">
+            Nkoma-Katalyeba Town Council,
+            Rwamwanja, Kamwenge, Uganda.
+          </p>
+
+        </div>
+
+      </section>
+
+
+    </main>
+
+  </div>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script
+    type="module"
+    src="../js/app.js"
+  ></script>
+
+  <script
+    type="module"
+    src="../js/admin.js"
+  ></script>
+
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn(){ return request.auth != null; }
+    function userDoc(){ return get(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function roleIs(r){ return signedIn() && userDoc().data.role == r; }
+    function broadcaster(){ return roleIs('broadcaster') || roleIs('admin'); }
+    function staff(){ return broadcaster() || roleIs('moderator'); }
+    function ownsMeeting(){ return signedIn() && resource.data.hostId == request.auth.uid; }
+
+    match /meetings/{meetingId} {
+      allow read: if true;
+      allow create: if broadcaster() && request.resource.data.hostId == request.auth.uid;
+      allow update: if broadcaster() && (ownsMeeting() || roleIs('admin'))
+                    && request.resource.data.hostId == resource.data.hostId;
+      allow delete: if roleIs('admin') || (roleIs('broadcaster') && ownsMeeting());
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.resource.data.name is string
+                      && request.resource.data.name.size() <= 60
+                      && request.resource.data.text is string
+                      && request.resource.data.text.size() > 0
+                      && request.resource.data.text.size() <= 500;
+        allow update: if false;
+        allow delete: if staff();
+      }
+
+      match /reactionTotals/{reactionId} {
+        allow read: if true;
+        allow create: if request.resource.data.count == 1;
+        allow update: if request.resource.data.count == resource.data.count + 1
+                      && request.resource.data.emoji == resource.data.emoji;
+        allow delete: if false;
+      }
+    }
+
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.role == 'viewer';
+      allow update: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.role == resource.data.role;
+      allow update, create, delete: if roleIs('admin');
+    }
+
+    match /reports/{reportId} {
+      allow create: if true;
+      allow read, update, delete: if roleIs('admin') || roleIs('moderator');
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if roleIs('admin');
+    }
+  }
+}

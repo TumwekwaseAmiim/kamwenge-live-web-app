@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" role="img" aria-labelledby="title desc">
+  <title id="title">Kamwenge Live logo</title>
+  <desc id="desc">Purple and pink Kamwenge Live logo with red live dot and play symbol.</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#EC4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="180" rx="36" fill="#fff"/>
+  <g transform="translate(30 28)">
+    <rect x="0" y="0" width="126" height="126" rx="34" fill="url(#g)"/>
+    <circle cx="34" cy="30" r="11" fill="#EF233C"/>
+    <path d="M53 36 L53 90 L99 63 Z" fill="#fff"/>
+  </g>
+  <text x="180" y="89" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="62" fill="#5B2C83">KAMWENGE</text>
+  <rect x="500" y="42" width="174" height="62" rx="18" fill="#EF233C"/>
+  <text x="531" y="88" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="40" fill="#fff">LIVE</text>
+  <text x="182" y="136" font-family="Arial, Helvetica, sans-serif" font-size="21" fill="#7C3AED">Homegrown in Uganda. Built to Compete Globally.</text>
+</svg>

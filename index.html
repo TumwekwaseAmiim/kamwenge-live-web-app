@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="theme-color"
+    content="#7C3AED"
+  >
+
+  <meta
+    name="description"
+    content="Kamwenge Live™ — Homegrown in Uganda. Built to Compete Globally."
+  >
+
+  <title>
+    Kamwenge Live™
+  </title>
+
+  <link
+    rel="manifest"
+    href="manifest.webmanifest"
+  >
+
+  <link
+    rel="icon"
+    href="assets/icons/icon.svg"
+    type="image/svg+xml"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    href="assets/icons/apple-touch-icon.png"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+
+<body>
+
+  <!-- =====================================================
+       TOP STRIP
+  ====================================================== -->
+
+  <div class="top-strip">
+    🇺🇬 Homegrown in Uganda. Built to Compete Globally.
+  </div>
+
+
+  <!-- =====================================================
+       NAVIGATION
+  ====================================================== -->
+
+  <nav class="nav">
+
+    <div class="container nav-inner">
+
+      <!-- REAL LOGO -->
+
+      <a
+        class="brand"
+        href="index.html"
+        aria-label="Kamwenge Live Home"
+      >
+
+        <img
+          src="assets/images/logo/kamwenge-live-logo.png"
+          alt="Kamwenge Live™"
+          class="brand-logo"
+        >
+
+      </a>
+
+
+      <button
+        class="menu-btn"
+        aria-label="Menu"
+      >
+        ☰
+      </button>
+
+
+      <div class="nav-links">
+
+        <a
+          class="active"
+          href="index.html"
+        >
+          🏠 Home
+        </a>
+
+        <a href="#live">
+          🔴 Live Now
+        </a>
+
+        <a href="#upcoming">
+          ⏳ Upcoming
+        </a>
+
+        <a href="about.html">
+          ✨ About
+        </a>
+
+      </div>
+
+
+      <div class="nav-actions">
+
+        <button
+          class="btn btn-light"
+          data-install
+          type="button"
+        >
+          📲 Install App
+        </button>
+
+        <a
+          class="btn btn-primary"
+          href="login.html"
+        >
+          🔐 Broadcaster Login
+        </a>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+  <!-- =====================================================
+       HERO
+  ====================================================== -->
+
+  <header class="hero">
+
+    <div class="container hero-grid">
+
+
+      <!-- LEFT -->
+
+      <div>
+
+        <span class="eyebrow">
+          🎥 Community broadcasting, made simple
+        </span>
+
+
+        <h1>
+          Go live from
+          <span class="gradient-text">
+            where you are.
+          </span>
+        </h1>
+
+
+        <p>
+          Schedule an event, share one link, broadcast from your
+          phone or computer, and let viewers watch and interact
+          in real time.
+          Kamwenge Live™ is designed locally and built to grow.
+        </p>
+
+
+        <div class="hero-actions">
+
+          <a
+            class="btn btn-live btn-lg"
+            href="#live"
+          >
+            🔴 Watch Live
+          </a>
+
+          <a
+            class="btn btn-primary btn-lg"
+            href="create.html"
+          >
+            ➕ Create Meeting
+          </a>
+
+          <button
+            class="btn btn-light btn-lg"
+            data-install
+            type="button"
+          >
+            📲 Install
+          </button>
+
+        </div>
+
+
+        <div class="trust-row">
+
+          <span>
+            💬 Live comments
+          </span>
+
+          <span>
+            ❤️ Reactions
+          </span>
+
+          <span>
+            🖥️ Screen sharing
+          </span>
+
+          <span>
+            ⏺️ Record to device
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- RIGHT MOCK PLAYER -->
+
+      <div class="mock-window">
+
+        <div class="mock-bar">
+
+          <span class="mock-dot"></span>
+
+          <span class="mock-dot"></span>
+
+          <span class="mock-dot"></span>
+
+        </div>
+
+
+        <div class="mock-content">
+
+          <div class="mock-video">
+
+            <span class="live-pill">
+
+              <span class="live-dot"></span>
+
+              LIVE
+
+            </span>
+
+
+            <div class="play">
+              ▶
+            </div>
+
+          </div>
+
+
+          <div class="mock-caption">
+
+            <strong>
+              Community Development Meeting
+            </strong>
+
+            <span class="muted">
+              🎙️ Live from Kamwenge
+            </span>
+
+
+            <div class="mock-stats">
+
+              <span>
+                💬 Join the discussion
+              </span>
+
+              <span>
+                🔗 Share
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
+  <main>
+
+
+    <!-- ===================================================
+         LIVE NOW
+    ==================================================== -->
+
+    <section
+      class="section"
+      id="live"
+    >
+
+      <div class="container">
+
+        <div class="section-title">
+
+          <div>
+
+            <h2>
+              🔴 Live Now
+            </h2>
+
+            <p>
+              Broadcasts happening right now.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="cards"
+          id="live-grid"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         UPCOMING
+    ==================================================== -->
+
+    <section
+      class="section"
+      id="upcoming"
+    >
+
+      <div class="container">
+
+        <div class="section-title">
+
+          <div>
+
+            <h2>
+              ⏳ Upcoming
+            </h2>
+
+            <p>
+              Open the link early, see the countdown,
+              then watch when the host goes live.
+            </p>
+
+          </div>
+
+
+          <a
+            class="btn btn-primary"
+            href="create.html"
+          >
+            ➕ Create Meeting
+          </a>
+
+        </div>
+
+
+        <div
+          class="cards"
+          id="upcoming-grid"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         ENDED EVENTS
+    ==================================================== -->
+
+    <section class="section">
+
+      <div class="container">
+
+        <div class="section-title">
+
+          <div>
+
+            <h2>
+              ✅ Ended Events
+            </h2>
+
+            <p>
+              Event pages remain available after a broadcast ends.
+              Video replays are not created automatically.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="cards"
+          id="ended-grid"
+        ></div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         FEATURES
+    ==================================================== -->
+
+    <section class="section">
+
+      <div class="container">
+
+        <div class="section-title">
+
+          <div>
+
+            <h2>
+              Built around the live moment
+            </h2>
+
+            <p>
+              Simple for viewers, powerful for broadcasters.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="feature-grid">
+
+
+          <div class="feature">
+
+            <div class="icon">
+              📅
+            </div>
+
+            <h3>
+              Schedule first
+            </h3>
+
+            <p>
+              Create an event in advance and share one
+              permanent public link with a live countdown.
+            </p>
+
+          </div>
+
+
+          <div class="feature">
+
+            <div class="icon">
+              📡
+            </div>
+
+            <h3>
+              Go live separately
+            </h3>
+
+            <p>
+              The broadcaster uses a private studio while
+              the public watches from a clean viewer page.
+            </p>
+
+          </div>
+
+
+          <div class="feature">
+
+            <div class="icon">
+              🖥️
+            </div>
+
+            <h3>
+              Share your screen
+            </h3>
+
+            <p>
+              Switch from camera to a presentation,
+              browser tab, application window or full
+              screen where supported.
+            </p>
+
+          </div>
+
+
+          <div class="feature">
+
+            <div class="icon">
+              ⏺️
+            </div>
+
+            <h3>
+              Record to your device
+            </h3>
+
+            <p>
+              Optional local recording is saved to the
+              broadcaster's own device.
+              Kamwenge Live™ does not create a replay library.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         BRAND STATEMENT
+    ==================================================== -->
+
+    <section class="section">
+
+      <div class="container">
+
+        <div class="panel brand-statement">
+
+          <div class="brand-statement-icon">
+            ▶
+          </div>
+
+
+          <div>
+
+            <h2>
+              KAMWENGE
+              <span class="brand-live">
+                LIVE
+              </span>™
+            </h2>
+
+
+            <p>
+              <strong>
+                Homegrown in Uganda.
+                Built to Compete Globally.
+              </strong>
+            </p>
+
+
+            <p class="muted">
+              A locally conceived live broadcasting platform
+              designed to make digital events simple,
+              accessible and interactive.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+  <footer class="footer">
+
+    <div class="container">
+
+
+      <div class="footer-grid">
+
+
+        <!-- BRAND -->
+
+        <div>
+
+          <a
+            class="brand"
+            href="index.html"
+            style="color:white"
+          >
+
+            <img
+              src="assets/images/logo/kamwenge-live-logo.png"
+              alt="Kamwenge Live™"
+              class="brand-logo"
+            >
+
+          </a>
+
+
+          <p>
+            Homegrown in Uganda.
+            Built to Compete Globally.
+          </p>
+
+
+          <p class="tiny">
+            Concept, Design & Development by
+            <strong>
+              Eng. Amiim Tumwekwase
+            </strong>.
+          </p>
+
+        </div>
+
+
+        <!-- EXPLORE -->
+
+        <div>
+
+          <h4>
+            Explore
+          </h4>
+
+          <a href="#live">
+            🔴 Live Now
+          </a>
+
+          <a href="#upcoming">
+            ⏳ Upcoming
+          </a>
+
+          <a href="about.html">
+            ✨ About
+          </a>
+
+        </div>
+
+
+        <!-- BROADCASTERS -->
+
+        <div>
+
+          <h4>
+            Broadcasters
+          </h4>
+
+          <a href="login.html">
+            🔐 Login
+          </a>
+
+          <a href="create.html">
+            ➕ Create Meeting
+          </a>
+
+          <a href="dashboard.html">
+            📋 Broadcaster Dashboard
+          </a>
+
+        </div>
+
+
+        <!-- PLATFORM -->
+
+        <div>
+
+          <h4>
+            Platform
+          </h4>
+
+          <a href="admin/index.html">
+            ⚙️ Administration
+          </a>
+
+          <a href="privacy.html">
+            🛡️ Privacy
+          </a>
+
+
+          <button
+            class="btn btn-light"
+            data-install
+            type="button"
+          >
+            📲 Install App
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="footer-bottom">
+
+        <span>
+          © 2026 Kamwenge Live™.
+          All Rights Reserved.
+        </span>
+
+        <span>
+          Built locally.
+          Designed professionally.
+          Ready to grow globally.
+        </span>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script
+    type="module"
+    src="js/app.js"
+  ></script>
+
+  <script
+    type="module"
+    src="js/home.js"
+  ></script>
+
+</body>
+
+</html>

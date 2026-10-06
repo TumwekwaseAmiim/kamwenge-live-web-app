@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="theme-color"
+    content="#7C3AED"
+  >
+
+  <title>
+    Event • Kamwenge Live™
+  </title>
+
+  <link
+    rel="manifest"
+    href="manifest.webmanifest"
+  >
+
+  <link
+    rel="icon"
+    href="assets/icons/icon.svg"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+
+<body>
+
+  <!-- =====================================================
+       TOP STRIP
+  ====================================================== -->
+
+  <div class="top-strip">
+    🇺🇬 Kamwenge Live™ — Homegrown in Uganda. Built to Compete Globally.
+  </div>
+
+
+  <!-- =====================================================
+       NAVIGATION
+  ====================================================== -->
+
+  <nav class="nav">
+
+    <div class="container nav-inner">
+
+      <a
+        class="brand"
+        href="index.html"
+      >
+
+        <span class="brand-mark">
+          ▶
+        </span>
+
+        <span>
+          KAMWENGE
+          <span class="brand-live">
+            LIVE
+          </span>™
+        </span>
+
+      </a>
+
+
+      <button
+        class="menu-btn"
+        aria-label="Open navigation menu"
+      >
+        ☰
+      </button>
+
+
+      <div class="nav-links">
+
+        <a href="index.html">
+          🏠 Home
+        </a>
+
+        <a
+          class="active"
+          href="#"
+        >
+          📺 Event Room
+        </a>
+
+        <a href="about.html">
+          ✨ About
+        </a>
+
+      </div>
+
+
+      <div class="nav-actions">
+
+        <button
+          class="btn btn-light"
+          id="share-event"
+          type="button"
+        >
+          🔗 Share
+        </button>
+
+        <button
+          class="btn btn-light"
+          data-install
+          type="button"
+        >
+          📲 Install
+        </button>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+  <!-- =====================================================
+       MAIN
+  ====================================================== -->
+
+  <main class="container">
+
+
+    <!-- ===================================================
+         EVENT HEADER
+    ==================================================== -->
+
+    <section class="page-hero">
+
+      <span
+        id="event-status"
+        class="badge badge-upcoming"
+      >
+        ⏳ UPCOMING
+      </span>
+
+
+      <h1 id="event-title">
+        Loading event…
+      </h1>
+
+
+      <!-- BROADCASTER -->
+
+      <div class="host-row event-host-block">
+
+        <img
+          id="event-host-photo"
+          class="host-avatar big-avatar"
+          src="assets/images/avatar-placeholder.svg"
+          alt="Broadcaster profile photo"
+        >
+
+        <div>
+
+          <strong id="event-host">
+            Broadcaster
+          </strong>
+
+          <span id="event-host-bio">
+            Kamwenge Live™ broadcaster
+          </span>
+
+          <span id="event-date"></span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         UPCOMING EVENT
+    ==================================================== -->
+
+    <section
+      id="pre-live"
+      class="panel center"
+    >
+
+      <div
+        style="
+          font-size:2.8rem;
+          margin-bottom:8px;
+        "
+      >
+        ⏳
+      </div>
+
+
+      <span class="eyebrow">
+        📅 UPCOMING BROADCAST
+      </span>
+
+
+      <h2>
+        This event has not started yet
+      </h2>
+
+
+      <p class="muted">
+        Keep this page open. Kamwenge Live™ will update
+        automatically when the broadcaster starts the event.
+      </p>
+
+
+      <div
+        class="countdown"
+        id="countdown"
+      >
+        00:00:00
+      </div>
+
+
+      <p class="tiny muted">
+        No refresh is normally required.
+      </p>
+
+    </section>
+
+
+    <!-- ===================================================
+         LIVE EVENT
+    ==================================================== -->
+
+    <section
+      id="live-stage"
+      class="layout-2 hidden"
+    >
+
+
+      <!-- VIDEO / REACTIONS -->
+
+      <div>
+
+
+        <div class="video-shell">
+
+          <video
+            id="viewer-video"
+            playsinline
+            autoplay
+          ></video>
+
+
+          <div
+            id="viewer-placeholder"
+            class="video-placeholder"
+          >
+
+            <div>
+
+              <div class="big">
+                📡
+              </div>
+
+              <h2>
+                Broadcaster is live
+              </h2>
+
+              <p>
+                Connecting to the broadcaster's live video…
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="video-overlay">
+
+            <span class="live-pill">
+
+              <span class="live-dot"></span>
+
+              LIVE
+
+            </span>
+
+          </div>
+
+
+          <div class="video-bottom">
+
+            <span>
+              Kamwenge Live™
+            </span>
+
+            <span>
+              🎙️
+              <span id="event-host-mini"></span>
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- REACTIONS -->
+
+        <div
+          class="reaction-row"
+          id="reaction-row"
+        >
+
+          <button
+            class="reaction"
+            data-emoji="❤️"
+            type="button"
+          >
+            ❤️
+            <span></span>
+          </button>
+
+
+          <button
+            class="reaction"
+            data-emoji="👍"
+            type="button"
+          >
+            👍
+            <span></span>
+          </button>
+
+
+          <button
+            class="reaction"
+            data-emoji="👏"
+            type="button"
+          >
+            👏
+            <span></span>
+          </button>
+
+
+          <button
+            class="reaction"
+            data-emoji="😂"
+            type="button"
+          >
+            😂
+            <span></span>
+          </button>
+
+
+          <button
+            class="reaction"
+            data-emoji="🔥"
+            type="button"
+          >
+            🔥
+            <span></span>
+          </button>
+
+        </div>
+
+
+        <!-- PUBLIC BRAND NOTE -->
+
+        <div class="studio-brand-note">
+
+          <h3>
+            📺 Watching on Kamwenge Live™
+          </h3>
+
+          <p>
+            Watch the live broadcast, react and join the discussion
+            from the same event page.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           LIVE DISCUSSION
+      ================================================== -->
+
+      <aside class="panel chat">
+
+        <h3>
+          💬 Live Discussion
+        </h3>
+
+        <p class="tiny muted">
+          Join the conversation while the broadcast is live.
+        </p>
+
+
+        <div
+          id="comments"
+          class="chat-list"
+        ></div>
+
+
+        <form
+          id="comment-form"
+          class="chat-compose"
+        >
+
+          <input
+            id="comment-name"
+            placeholder="Your name"
+            maxlength="60"
+            style="max-width:120px"
+          >
+
+          <input
+            id="comment-text"
+            placeholder="Write a comment…"
+            maxlength="500"
+          >
+
+          <button
+            class="btn btn-primary"
+            aria-label="Send comment"
+            type="submit"
+          >
+            ➤
+          </button>
+
+        </form>
+
+      </aside>
+
+    </section>
+
+
+    <!-- ===================================================
+         BROADCAST ENDED
+    ==================================================== -->
+
+    <section
+      id="ended-stage"
+      class="ended-message hidden"
+    >
+
+      <div class="emoji">
+        ✅
+      </div>
+
+
+      <span class="eyebrow">
+        BROADCAST COMPLETE
+      </span>
+
+
+      <h2>
+        Broadcast Ended
+      </h2>
+
+
+      <p class="muted">
+        Thank you for watching this event on Kamwenge Live™.
+      </p>
+
+
+      <p class="tiny muted">
+        Kamwenge Live™ does not automatically publish a replay.
+        A broadcaster may record the event directly to their own device.
+      </p>
+
+
+      <button
+        class="btn btn-light"
+        type="button"
+        onclick="document.querySelector('#share-event').click()"
+      >
+        🔗 Share Event Page
+      </button>
+
+    </section>
+
+
+    <!-- ===================================================
+         PLATFORM MESSAGE
+    ==================================================== -->
+
+    <section class="section">
+
+      <div class="panel brand-statement">
+
+        <div class="brand-statement-icon">
+          ▶
+        </div>
+
+
+        <div>
+
+          <h2>
+            KAMWENGE
+            <span class="brand-live">
+              LIVE
+            </span>™
+          </h2>
+
+
+          <p>
+            <strong>
+              Homegrown in Uganda.
+              Built to Compete Globally.
+            </strong>
+          </p>
+
+
+          <p class="muted">
+            A locally conceived live broadcasting platform
+            designed to make digital events simple,
+            accessible and interactive.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+  <footer class="site-footer">
+
+    <div class="container">
+
+      <p>
+        <strong>
+          Kamwenge Live™
+        </strong>
+        — Homegrown in Uganda.
+        Built to Compete Globally.
+      </p>
+
+
+      <p>
+        Concept, Design & Development:
+        <strong>
+          Eng. Amiim Tumwekwase
+        </strong>
+      </p>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script
+    type="module"
+    src="js/app.js"
+  ></script>
+
+  <script
+    type="module"
+    src="js/live.js"
+  ></script>
+
+</body>
+
+</html>

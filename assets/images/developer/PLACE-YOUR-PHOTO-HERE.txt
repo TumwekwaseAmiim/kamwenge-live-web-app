@@ -1,0 +1,6 @@
+Place your real developer photo in this folder and name it:
+
+amiim.jpg
+
+Expected path used by the About page:
+assets/images/developer/amiim.jpg
