@@ -32,25 +32,20 @@ async function requestToken(eventId, role) {
     );
   }
 
-
   if (!eventId) {
     throw new Error(
       'Event ID is required for live streaming.'
     );
   }
 
-
   const headers = {
     'Content-Type': 'application/json'
   };
 
 
-  // Broadcaster must be authenticated
   if (role === 'publisher') {
 
-    const user =
-      auth?.currentUser;
-
+    const user = auth?.currentUser;
 
     if (!user) {
       throw new Error(
@@ -58,10 +53,8 @@ async function requestToken(eventId, role) {
       );
     }
 
-
     const idToken =
       await user.getIdToken();
-
 
     headers.Authorization =
       `Bearer ${idToken}`;
@@ -73,7 +66,6 @@ async function requestToken(eventId, role) {
       livekitConfig.tokenEndpoint,
       {
         method: 'POST',
-
         headers,
 
         body: JSON.stringify({
@@ -91,7 +83,6 @@ async function requestToken(eventId, role) {
 
 
   if (!response.ok) {
-
     throw new Error(
       data?.error ||
       'Could not create a live streaming session.'
@@ -103,7 +94,6 @@ async function requestToken(eventId, role) {
     !data.token ||
     !data.wsUrl
   ) {
-
     throw new Error(
       'Streaming server returned an incomplete session.'
     );
@@ -127,14 +117,12 @@ export async function publishStream(
     !mediaStream ||
     !mediaStream.getTracks().length
   ) {
-
     throw new Error(
       'No camera or screen stream is active.'
     );
   }
 
 
-  // Stop any existing publishing session
   await stopPublish();
 
 
@@ -147,19 +135,26 @@ export async function publishStream(
 
   const room =
     new Room({
-      adaptiveStream: true,
-      dynacast: true
+
+      /*
+       * IMPORTANT:
+       * Disable adaptive behaviour during testing.
+       * We want the main video to continue transmitting
+       * continuously without LiveKit deciding to pause it.
+       */
+
+      adaptiveStream: false,
+      dynacast: false
     });
 
 
-  // -----------------------------------------------------
-  // CONNECTION EVENTS
-  // -----------------------------------------------------
+  // =====================================================
+  // PUBLISHER CONNECTION EVENTS
+  // =====================================================
 
   room.on(
     RoomEvent.Connected,
     () => {
-
       console.log(
         'Kamwenge Live broadcaster connected:',
         eventId
@@ -169,22 +164,10 @@ export async function publishStream(
 
 
   room.on(
-    RoomEvent.Disconnected,
-    () => {
-
-      console.log(
-        'Kamwenge Live broadcaster disconnected.'
-      );
-    }
-  );
-
-
-  room.on(
     RoomEvent.Reconnecting,
     () => {
-
       console.log(
-        'Kamwenge Live broadcaster reconnecting…'
+        'Kamwenge Live broadcaster reconnecting...'
       );
     }
   );
@@ -193,7 +176,6 @@ export async function publishStream(
   room.on(
     RoomEvent.Reconnected,
     () => {
-
       console.log(
         'Kamwenge Live broadcaster reconnected.'
       );
@@ -201,9 +183,19 @@ export async function publishStream(
   );
 
 
-  // -----------------------------------------------------
-  // CONNECT
-  // -----------------------------------------------------
+  room.on(
+    RoomEvent.Disconnected,
+    () => {
+      console.log(
+        'Kamwenge Live broadcaster disconnected.'
+      );
+    }
+  );
+
+
+  // =====================================================
+  // CONNECT PUBLISHER
+  // =====================================================
 
   await room.connect(
     session.wsUrl,
@@ -211,9 +203,13 @@ export async function publishStream(
   );
 
 
-  // -----------------------------------------------------
-  // PUBLISH VIDEO
-  // -----------------------------------------------------
+  publisherRoom = room;
+  publisherTracks = [];
+
+
+  // =====================================================
+  // VIDEO
+  // =====================================================
 
   const videoTracks =
     mediaStream
@@ -224,14 +220,12 @@ export async function publishStream(
       );
 
 
-  for (
-    const videoTrack
-    of videoTracks
-  ) {
+  for (const videoTrack of videoTracks) {
 
     console.log(
       'Publishing Kamwenge Live video:',
-      videoTrack.label
+      videoTrack.label,
+      videoTrack.readyState
     );
 
 
@@ -241,21 +235,20 @@ export async function publishStream(
         videoTrack,
         {
           name: 'main-video',
-
-          source:
-            Track.Source.Camera
+          source: Track.Source.Camera
         }
       );
 
 
-    publisherTracks
-      .push(videoTrack);
+    publisherTracks.push(
+      videoTrack
+    );
   }
 
 
-  // -----------------------------------------------------
-  // PUBLISH AUDIO
-  // -----------------------------------------------------
+  // =====================================================
+  // AUDIO
+  // =====================================================
 
   const audioTracks =
     mediaStream
@@ -266,14 +259,12 @@ export async function publishStream(
       );
 
 
-  for (
-    const audioTrack
-    of audioTracks
-  ) {
+  for (const audioTrack of audioTracks) {
 
     console.log(
       'Publishing Kamwenge Live audio:',
-      audioTrack.label
+      audioTrack.label,
+      audioTrack.readyState
     );
 
 
@@ -283,20 +274,16 @@ export async function publishStream(
         audioTrack,
         {
           name: 'main-audio',
-
           source:
             Track.Source.Microphone
         }
       );
 
 
-    publisherTracks
-      .push(audioTrack);
+    publisherTracks.push(
+      audioTrack
+    );
   }
-
-
-  publisherRoom =
-    room;
 
 
   console.log(
@@ -318,7 +305,7 @@ export async function publishStream(
 
 
 // =====================================================
-// CHANGE CAMERA / SCREEN
+// SWITCH CAMERA / SCREEN
 // =====================================================
 
 export async function replacePublishedStream(
@@ -326,16 +313,8 @@ export async function replacePublishedStream(
   mediaStream
 ) {
 
-  /*
-   * For now Kamwenge Live reconnects the publisher
-   * whenever the source changes.
-   *
-   * This keeps camera → screen → camera switching
-   * reliable while the app is being tested.
-   */
-
   console.log(
-    'Changing Kamwenge Live broadcast source…'
+    'Changing Kamwenge Live broadcast source...'
   );
 
 
@@ -347,25 +326,20 @@ export async function replacePublishedStream(
 
 
 // =====================================================
-// STOP BROADCASTING
+// STOP PUBLISHING
 // =====================================================
 
 export async function stopPublish() {
 
   if (!publisherRoom) {
 
-    publisherTracks =
-      [];
+    publisherTracks = [];
 
     return;
   }
 
 
   try {
-
-    // ---------------------------------------------
-    // UNPUBLISH TRACKS
-    // ---------------------------------------------
 
     for (
       const track
@@ -390,13 +364,7 @@ export async function stopPublish() {
     }
 
 
-    // ---------------------------------------------
-    // DISCONNECT
-    // ---------------------------------------------
-
-    await publisherRoom
-      .disconnect();
-
+    await publisherRoom.disconnect();
 
   } catch (error) {
 
@@ -405,14 +373,10 @@ export async function stopPublish() {
       error
     );
 
-
   } finally {
 
-    publisherRoom =
-      null;
-
-    publisherTracks =
-      [];
+    publisherRoom = null;
+    publisherTracks = [];
   }
 }
 
@@ -434,7 +398,6 @@ export async function watchLiveStream(
   }
 
 
-  // Stop previous viewer session
   await stopWatching();
 
 
@@ -447,18 +410,25 @@ export async function watchLiveStream(
 
   const room =
     new Room({
-      adaptiveStream: true,
-      dynacast: true
+
+      /*
+       * IMPORTANT:
+       * Disable adaptive streaming for now.
+       * This helps prevent the viewer from receiving
+       * one frame and then appearing frozen.
+       */
+
+      adaptiveStream: false,
+      dynacast: false
     });
 
 
-  viewerRoom =
-    room;
+  viewerRoom = room;
 
 
-  // ===================================================
-  // ATTACH TRACK
-  // ===================================================
+  // =====================================================
+  // ATTACH REMOTE TRACK
+  // =====================================================
 
   const attachTrack =
     async (
@@ -469,28 +439,28 @@ export async function watchLiveStream(
       console.log(
         'Kamwenge Live track received:',
         {
-          kind:
-            track.kind,
-
-          source:
-            track.source,
-
+          kind: track.kind,
+          source: track.source,
           participant:
             participant?.identity
         }
       );
 
 
-      // ------------------------------------------------
+      // =================================================
       // VIDEO
-      // ------------------------------------------------
+      // =================================================
 
       if (
         track.kind === Track.Kind.Video ||
         track.kind === 'video'
       ) {
 
-        // Remove previous video track
+        console.log(
+          'Attaching LIVE video track...'
+        );
+
+
         if (viewerVideoTrack) {
 
           try {
@@ -509,10 +479,8 @@ export async function watchLiveStream(
 
 
         /*
-         * IMPORTANT FIX
-         *
-         * Attach the LiveKit video track directly
-         * to the real Kamwenge Live viewer element.
+         * Attach LiveKit directly to the real
+         * visible Kamwenge Live <video> element.
          */
 
         track.attach(
@@ -526,19 +494,42 @@ export async function watchLiveStream(
         videoElement.playsInline =
           true;
 
+
+        /*
+         * IMPORTANT:
+         *
+         * Keep video muted because audio is handled
+         * separately below.
+         *
+         * This also prevents browser autoplay rules
+         * from blocking continuous video playback.
+         */
+
         videoElement.muted =
-          false;
+          true;
+
+
+        videoElement.style.display =
+          'block';
+
+
+        videoElement.removeAttribute(
+          'poster'
+        );
 
 
         try {
 
-          await videoElement
-            .play();
+          await videoElement.play();
+
+          console.log(
+            'Kamwenge Live video is playing.'
+          );
 
         } catch (error) {
 
           console.warn(
-            'Viewer video autoplay blocked:',
+            'Viewer video playback warning:',
             error
           );
         }
@@ -553,14 +544,19 @@ export async function watchLiveStream(
       }
 
 
-      // ------------------------------------------------
+      // =================================================
       // AUDIO
-      // ------------------------------------------------
+      // =================================================
 
       if (
         track.kind === Track.Kind.Audio ||
         track.kind === 'audio'
       ) {
+
+        console.log(
+          'Attaching LIVE audio track...'
+        );
+
 
         const audioElement =
           document.createElement(
@@ -574,10 +570,12 @@ export async function watchLiveStream(
         audioElement.controls =
           false;
 
+        audioElement.playsInline =
+          true;
+
         audioElement.dataset
           .kamwengeLiveAudio =
           '1';
-
 
         audioElement.style.display =
           'none';
@@ -594,23 +592,21 @@ export async function watchLiveStream(
         );
 
 
-        viewerAudioTracks
-          .push({
-            track,
-            element:
-              audioElement
-          });
+        viewerAudioTracks.push({
+          track,
+          element:
+            audioElement
+        });
 
 
         try {
 
-          await audioElement
-            .play();
+          await audioElement.play();
 
         } catch (error) {
 
           console.warn(
-            'Viewer audio autoplay blocked. User interaction may be required.',
+            'Viewer audio autoplay blocked. Click or tap the page to enable sound.',
             error
           );
         }
@@ -618,9 +614,9 @@ export async function watchLiveStream(
     };
 
 
-  // ===================================================
+  // =====================================================
   // TRACK SUBSCRIBED
-  // ===================================================
+  // =====================================================
 
   room.on(
     RoomEvent.TrackSubscribed,
@@ -645,9 +641,9 @@ export async function watchLiveStream(
   );
 
 
-  // ===================================================
+  // =====================================================
   // TRACK UNSUBSCRIBED
-  // ===================================================
+  // =====================================================
 
   room.on(
     RoomEvent.TrackUnsubscribed,
@@ -665,9 +661,7 @@ export async function watchLiveStream(
 
 
       try {
-
         track.detach();
-
       } catch {}
 
 
@@ -676,13 +670,10 @@ export async function watchLiveStream(
         viewerVideoTrack
       ) {
 
-        viewerVideoTrack =
-          null;
-
+        viewerVideoTrack = null;
 
         videoElement.srcObject =
           null;
-
 
         onState(
           'reconnecting'
@@ -692,50 +683,45 @@ export async function watchLiveStream(
   );
 
 
-  // ===================================================
-  // PARTICIPANT CONNECTED
-  // ===================================================
+  // =====================================================
+  // PARTICIPANTS
+  // =====================================================
 
   room.on(
     RoomEvent.ParticipantConnected,
     participant => {
 
       console.log(
-        'Kamwenge Live participant connected:',
+        'Participant connected:',
         participant.identity
       );
     }
   );
 
-
-  // ===================================================
-  // PARTICIPANT DISCONNECTED
-  // ===================================================
 
   room.on(
     RoomEvent.ParticipantDisconnected,
     participant => {
 
       console.log(
-        'Kamwenge Live participant disconnected:',
+        'Participant disconnected:',
         participant.identity
       );
     }
   );
 
 
-  // ===================================================
-  // CONNECTION STATE
-  // ===================================================
+  // =====================================================
+  // CONNECTION STATUS
+  // =====================================================
 
   room.on(
     RoomEvent.Reconnecting,
     () => {
 
       console.log(
-        'Kamwenge Live viewer reconnecting…'
+        'Kamwenge Live viewer reconnecting...'
       );
-
 
       onState(
         'reconnecting'
@@ -752,7 +738,6 @@ export async function watchLiveStream(
         'Kamwenge Live viewer reconnected.'
       );
 
-
       onState(
         'connected'
       );
@@ -768,7 +753,6 @@ export async function watchLiveStream(
         'Kamwenge Live viewer disconnected.'
       );
 
-
       onState(
         'disconnected'
       );
@@ -776,9 +760,9 @@ export async function watchLiveStream(
   );
 
 
-  // ===================================================
+  // =====================================================
   // CONNECT VIEWER
-  // ===================================================
+  // =====================================================
 
   await room.connect(
     session.wsUrl,
@@ -797,9 +781,9 @@ export async function watchLiveStream(
   );
 
 
-  // ===================================================
-  // EXISTING REMOTE TRACKS FALLBACK
-  // ===================================================
+  // =====================================================
+  // CHECK ALREADY-PUBLISHED TRACKS
+  // =====================================================
 
   room.remoteParticipants
     .forEach(
@@ -809,6 +793,13 @@ export async function watchLiveStream(
           .trackPublications
           .forEach(
             publication => {
+
+              console.log(
+                'Existing remote publication:',
+                publication.kind,
+                publication.isSubscribed
+              );
+
 
               if (
                 publication.track
@@ -830,33 +821,31 @@ export async function watchLiveStream(
 
 
 // =====================================================
-// STOP VIEWING
+// STOP WATCHING
 // =====================================================
 
 export async function stopWatching() {
 
-  // -----------------------------------------------------
-  // REMOVE VIDEO
-  // -----------------------------------------------------
+  // =====================================================
+  // VIDEO CLEANUP
+  // =====================================================
 
   if (viewerVideoTrack) {
 
     try {
 
-      viewerVideoTrack
-        .detach();
+      viewerVideoTrack.detach();
 
     } catch {}
 
 
-    viewerVideoTrack =
-      null;
+    viewerVideoTrack = null;
   }
 
 
-  // -----------------------------------------------------
-  // REMOVE AUDIO
-  // -----------------------------------------------------
+  // =====================================================
+  // AUDIO CLEANUP
+  // =====================================================
 
   for (
     const item
@@ -865,23 +854,19 @@ export async function stopWatching() {
 
     try {
 
-      item.track
-        .detach(
-          item.element
-        );
+      item.track.detach(
+        item.element
+      );
 
     } catch {}
 
 
     try {
 
-      item.element
-        .pause();
-
+      item.element.pause();
 
       item.element.srcObject =
         null;
-
 
       item.element.remove();
 
@@ -889,11 +874,9 @@ export async function stopWatching() {
   }
 
 
-  viewerAudioTracks =
-    [];
+  viewerAudioTracks = [];
 
 
-  // Remove any orphaned audio elements
   document
     .querySelectorAll(
       'audio[data-kamwenge-live-audio="1"]'
@@ -902,22 +885,28 @@ export async function stopWatching() {
       element => {
 
         try {
+
+          element.pause();
+
+          element.srcObject =
+            null;
+
           element.remove();
+
         } catch {}
       }
     );
 
 
-  // -----------------------------------------------------
-  // DISCONNECT VIEWER
-  // -----------------------------------------------------
+  // =====================================================
+  // VIEWER ROOM CLEANUP
+  // =====================================================
 
   if (viewerRoom) {
 
     try {
 
-      await viewerRoom
-        .disconnect();
+      await viewerRoom.disconnect();
 
     } catch (error) {
 
@@ -928,7 +917,6 @@ export async function stopWatching() {
     }
 
 
-    viewerRoom =
-      null;
+    viewerRoom = null;
   }
 }
