@@ -18,34 +18,78 @@ const SHARE_WORKER =
   'https://rwamwanja-kamwenge-live.tumwekwaseamiim.workers.dev';
 
 
-// =====================================================
-// PUBLIC HOME SECTIONS
-// =====================================================
-
-const sections = {
-
-  live:
-    document.querySelector(
-      '#live-grid'
-    ),
-
-  scheduled:
-    document.querySelector(
-      '#upcoming-grid'
-    )
-};
-
-
-// =====================================================
-// DEFAULT AVATAR
-// =====================================================
-
 const avatar =
   'assets/images/avatar-placeholder.svg';
 
 
 // =====================================================
-// BUILD EVENT SHARE URL
+// PUBLIC SECTIONS
+// =====================================================
+
+const liveGrid =
+  document.querySelector(
+    '#live-grid'
+  );
+
+
+const upcomingGrid =
+  document.querySelector(
+    '#upcoming-grid'
+  );
+
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+function getMeetingDate(
+  meeting
+) {
+
+  const date =
+    asDate(
+      meeting?.scheduledAt
+    );
+
+
+  if (
+    date instanceof Date &&
+    !Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return date;
+  }
+
+
+  if (
+    meeting?.scheduledAt
+  ) {
+
+    const parsed =
+      new Date(
+        meeting.scheduledAt
+      );
+
+
+    if (
+      !Number.isNaN(
+        parsed.getTime()
+      )
+    ) {
+
+      return parsed;
+    }
+  }
+
+
+  return null;
+}
+
+
+// =====================================================
+// SHARE URL
 // =====================================================
 
 function getShareURL(
@@ -65,14 +109,32 @@ function getShareURL(
 // EVENT CARD
 // =====================================================
 
-function card(m) {
+function createCard(
+  meeting
+) {
 
   const isLive =
-    m.status ===
+    meeting.status ===
     'live';
 
 
-  const status =
+  const meetingDate =
+    getMeetingDate(
+      meeting
+    );
+
+
+  const title =
+    meeting.title ||
+    'Kamwenge Live Event';
+
+
+  const host =
+    meeting.hostName ||
+    'Broadcaster';
+
+
+  const statusText =
     isLive
       ? '🔴 LIVE'
       : '⏳ UPCOMING';
@@ -84,20 +146,36 @@ function card(m) {
       : 'badge-upcoming';
 
 
-  const action =
+  const actionText =
     isLive
-      ? 'Watch Live'
-      : 'View Countdown';
+      ? '🔴 Watch Live'
+      : '⏳ View Countdown';
+
+
+  const actionClass =
+    isLive
+      ? 'btn-live'
+      : 'btn-soft';
 
 
   const eventURL =
-    `live.html?event=${encodeURIComponent(m.id)}`;
+    `live.html?event=${encodeURIComponent(
+      meeting.id
+    )}`;
 
 
   const shareURL =
     getShareURL(
-      m.id
+      meeting.id
     );
+
+
+  const formattedDate =
+    meetingDate
+      ? formatDate(
+          meetingDate
+        )
+      : 'Schedule unavailable';
 
 
   return `
@@ -117,17 +195,14 @@ function card(m) {
         <div class="event-meta">
 
           <span class="badge ${badgeClass}">
-            ${status}
+            ${statusText}
           </span>
 
         </div>
 
 
         <h3>
-          ${escapeHTML(
-            m.title ||
-            'Kamwenge Live Event'
-          )}
+          ${escapeHTML(title)}
         </h3>
 
 
@@ -136,13 +211,10 @@ function card(m) {
           <img
             class="host-avatar"
             src="${escapeHTML(
-              m.hostPhotoURL ||
+              meeting.hostPhotoURL ||
               avatar
             )}"
-            alt="${escapeHTML(
-              m.hostName ||
-              'Broadcaster'
-            )}"
+            alt="${escapeHTML(host)}"
             onerror="this.src='${avatar}'"
           >
 
@@ -150,19 +222,13 @@ function card(m) {
           <div>
 
             <strong>
-              ${escapeHTML(
-                m.hostName ||
-                'Broadcaster'
-              )}
+              ${escapeHTML(host)}
             </strong>
 
 
             <span>
-              ${formatDate(
-                asDate(
-                  m.scheduledAt
-                ) ||
-                m.scheduledAt
+              ${escapeHTML(
+                formattedDate
               )}
             </span>
 
@@ -176,41 +242,31 @@ function card(m) {
       <div class="event-footer">
 
         <a
-          class="btn ${
-            isLive
-              ? 'btn-live'
-              : 'btn-soft'
-          }"
+          class="btn ${actionClass}"
           href="${eventURL}"
         >
-          ${
-            isLive
-              ? '🔴 Watch Live'
-              : '⏳ View Countdown'
-          }
+          ${actionText}
         </a>
 
 
         <button
           class="btn btn-light share"
           type="button"
-          data-event-id="${escapeHTML(m.id)}"
-          data-share-url="${escapeHTML(shareURL)}"
+
+          data-share-url="${escapeHTML(
+            shareURL
+          )}"
+
           data-title="${escapeHTML(
-            m.title ||
-            'Kamwenge Live Event'
+            title
           )}"
+
           data-host="${escapeHTML(
-            m.hostName ||
-            'Broadcaster'
+            host
           )}"
+
           data-date="${escapeHTML(
-            formatDate(
-              asDate(
-                m.scheduledAt
-              ) ||
-              m.scheduledAt
-            )
+            formattedDate
           )}"
         >
           🔗 Share
@@ -224,37 +280,33 @@ function card(m) {
 
 
 // =====================================================
-// EMPTY STATE
+// EMPTY STATES
 // =====================================================
 
-function emptyState(
-  status
-) {
+function noLiveEvents() {
 
-  if (
-    status ===
-    'live'
-  ) {
+  return `
+    <div class="empty-state">
 
-    return `
-      <div class="empty-state">
-
-        <div class="emoji">
-          📡
-        </div>
-
-        <strong>
-          No live broadcasts right now.
-        </strong>
-
-        <p class="muted">
-          Upcoming events will appear below.
-        </p>
-
+      <div class="emoji">
+        📡
       </div>
-    `;
-  }
 
+      <strong>
+        No live broadcasts right now.
+      </strong>
+
+      <p class="muted">
+        When a broadcaster goes live,
+        the event will appear here automatically.
+      </p>
+
+    </div>
+  `;
+}
+
+
+function noUpcomingEvents() {
 
   return `
     <div class="empty-state">
@@ -268,7 +320,7 @@ function emptyState(
       </strong>
 
       <p class="muted">
-        New scheduled broadcasts will appear here.
+        Scheduled broadcasts will appear here.
       </p>
 
     </div>
@@ -277,144 +329,10 @@ function emptyState(
 
 
 // =====================================================
-// RENDER HOMEPAGE
+// SHARE BUTTONS
 // =====================================================
 
-function render(
-  all
-) {
-
-  // -----------------------------------------------------
-  // Only public statuses:
-  // LIVE
-  // SCHEDULED
-  //
-  // ENDED events stay in Firestore but are not shown.
-  // -----------------------------------------------------
-
-  Object.entries(
-    sections
-  )
-    .forEach(
-      (
-        [
-          status,
-          element
-        ]
-      ) => {
-
-        if (!element) {
-          return;
-        }
-
-
-        const items =
-          all
-            .filter(
-              meeting =>
-                meeting.status ===
-                status
-            );
-
-
-        // -------------------------------------------------
-        // SORT EVENTS
-        // -------------------------------------------------
-
-        if (
-          status ===
-          'scheduled'
-        ) {
-
-          /*
-           * Upcoming:
-           * nearest event first
-           */
-
-          items.sort(
-            (
-              a,
-              b
-            ) => {
-
-              const dateA =
-                asDate(
-                  a.scheduledAt
-                );
-
-
-              const dateB =
-                asDate(
-                  b.scheduledAt
-                );
-
-
-              return (
-                dateA?.getTime?.() ||
-                0
-              ) - (
-                dateB?.getTime?.() ||
-                0
-              );
-            }
-          );
-
-        } else {
-
-          /*
-           * Live:
-           * newest live event first
-           */
-
-          items.sort(
-            (
-              a,
-              b
-            ) => {
-
-              const dateA =
-                asDate(
-                  a.scheduledAt
-                );
-
-
-              const dateB =
-                asDate(
-                  b.scheduledAt
-                );
-
-
-              return (
-                dateB?.getTime?.() ||
-                0
-              ) - (
-                dateA?.getTime?.() ||
-                0
-              );
-            }
-          );
-        }
-
-
-        element.innerHTML =
-          items.length
-            ? items
-                .map(
-                  card
-                )
-                .join(
-                  ''
-                )
-            : emptyState(
-                status
-              );
-      }
-    );
-
-
-  // =====================================================
-  // SHARE BUTTONS
-  // =====================================================
+function connectShareButtons() {
 
   document
     .querySelectorAll(
@@ -449,25 +367,25 @@ function render(
               '';
 
 
-            let text =
+            let shareText =
               `🔴 ${title}`;
 
 
             if (date) {
 
-              text +=
+              shareText +=
                 `\n📅 ${date}`;
             }
 
 
             if (host) {
 
-              text +=
+              shareText +=
                 `\n🎙️ ${host}`;
             }
 
 
-            text +=
+            shareText +=
               '\n\nWatch on Kamwenge Live™';
 
 
@@ -482,7 +400,8 @@ function render(
                     title:
                       `${title} • Kamwenge Live™`,
 
-                    text,
+                    text:
+                      shareText,
 
                     url:
                       shareURL
@@ -490,24 +409,23 @@ function render(
                 );
 
 
-              } else {
-
-                await navigator
-                  .clipboard
-                  .writeText(
-                    shareURL
-                  );
-
-
-                toast(
-                  'Event share link copied 🔗'
-                );
+                return;
               }
 
 
-            } catch (
-              error
-            ) {
+              await navigator
+                .clipboard
+                .writeText(
+                  shareURL
+                );
+
+
+              toast(
+                'Event link copied 🔗'
+              );
+
+
+            } catch (error) {
 
               if (
                 error?.name ===
@@ -534,13 +452,14 @@ function render(
 
 
                 toast(
-                  'Event share link copied 🔗'
+                  'Event link copied 🔗'
                 );
+
 
               } catch {
 
                 window.prompt(
-                  'Copy this event link:',
+                  'Copy this Kamwenge Live event link:',
                   shareURL
                 );
               }
@@ -548,6 +467,151 @@ function render(
           };
       }
     );
+}
+
+
+// =====================================================
+// RENDER PUBLIC EVENTS
+// =====================================================
+
+function render(
+  meetings
+) {
+
+  const now =
+    Date.now();
+
+
+  // ===================================================
+  // LIVE EVENTS
+  //
+  // Only records explicitly marked live.
+  // ===================================================
+
+  const liveEvents =
+    meetings
+      .filter(
+        meeting =>
+          meeting.status ===
+          'live'
+      )
+      .sort(
+        (
+          a,
+          b
+        ) => {
+
+          const aDate =
+            getMeetingDate(a)
+              ?.getTime() ||
+            0;
+
+
+          const bDate =
+            getMeetingDate(b)
+              ?.getTime() ||
+            0;
+
+
+          return (
+            bDate -
+            aDate
+          );
+        }
+      );
+
+
+  // ===================================================
+  // UPCOMING
+  //
+  // Must:
+  // 1. Be scheduled
+  // 2. Have a valid date
+  // 3. Be in the future
+  // ===================================================
+
+  const upcomingEvents =
+    meetings
+      .filter(
+        meeting => {
+
+          if (
+            meeting.status !==
+            'scheduled'
+          ) {
+
+            return false;
+          }
+
+
+          const date =
+            getMeetingDate(
+              meeting
+            );
+
+
+          if (!date) {
+            return false;
+          }
+
+
+          return (
+            date.getTime() >
+            now
+          );
+        }
+      )
+      .sort(
+        (
+          a,
+          b
+        ) => {
+
+          return (
+            getMeetingDate(a)
+              .getTime() -
+            getMeetingDate(b)
+              .getTime()
+          );
+        }
+      );
+
+
+  // ===================================================
+  // RENDER LIVE
+  // ===================================================
+
+  if (liveGrid) {
+
+    liveGrid.innerHTML =
+      liveEvents.length
+        ? liveEvents
+            .map(
+              createCard
+            )
+            .join('')
+        : noLiveEvents();
+  }
+
+
+  // ===================================================
+  // RENDER UPCOMING
+  // ===================================================
+
+  if (upcomingGrid) {
+
+    upcomingGrid.innerHTML =
+      upcomingEvents.length
+        ? upcomingEvents
+            .map(
+              createCard
+            )
+            .join('')
+        : noUpcomingEvents();
+  }
+
+
+  connectShareButtons();
 }
 
 
@@ -564,44 +628,47 @@ try {
     error => {
 
       console.error(
-        'Kamwenge Live meeting watcher error:',
+        'Kamwenge Live meetings error:',
         error
       );
 
 
-      Object
-        .values(
-          sections
-        )
-        .forEach(
-          element => {
+      if (liveGrid) {
 
-            if (!element) {
-              return;
-            }
+        liveGrid.innerHTML =
+          `
+            <div class="empty-state">
+
+              <div class="emoji">
+                ⚠️
+              </div>
+
+              <strong>
+                Live events could not be loaded.
+              </strong>
+
+            </div>
+          `;
+      }
 
 
-            element.innerHTML =
-              `
-                <div class="empty-state">
+      if (upcomingGrid) {
 
-                  <div class="emoji">
-                    ⚠️
-                  </div>
+        upcomingGrid.innerHTML =
+          `
+            <div class="empty-state">
 
-                  <strong>
-                    Events could not be loaded.
-                  </strong>
+              <div class="emoji">
+                ⚠️
+              </div>
 
-                  <p class="muted">
-                    Please check your internet connection
-                    and try again.
-                  </p>
+              <strong>
+                Upcoming events could not be loaded.
+              </strong>
 
-                </div>
-              `;
-          }
-        );
+            </div>
+          `;
+      }
     }
   );
 
