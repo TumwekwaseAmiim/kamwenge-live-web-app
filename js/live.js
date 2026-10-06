@@ -10,7 +10,8 @@ import {
 
 import {
   watchLiveStream,
-  stopWatching
+  stopWatching,
+  resumeViewerAudio
 } from './streaming-adapter.js';
 
 import {
@@ -138,9 +139,75 @@ const els = {
   share:
     document.querySelector(
       '#share-event'
+    ),
+
+  sound:
+    document.querySelector(
+      '#enable-sound'
+    ),
+
+  fullscreen:
+    document.querySelector(
+      '#viewer-fullscreen'
+    ),
+
+  videoShell:
+    document.querySelector(
+      '.video-shell'
     )
 };
 
+
+
+
+// =====================================================
+// VIEWER SOUND + FULLSCREEN CONTROLS
+// =====================================================
+
+async function enableViewerSound() {
+  try {
+    await resumeViewerAudio();
+
+    if (els.sound) {
+      els.sound.textContent = '🔊 Sound On';
+      els.sound.classList.add('sound-on');
+    }
+
+    toast('Live sound enabled 🔊');
+  } catch (error) {
+    console.warn('Could not enable live sound:', error);
+    toast('Tap again to enable live sound.');
+  }
+}
+
+els.sound?.addEventListener('click', enableViewerSound);
+
+// Any deliberate tap on the live video also counts as the user gesture
+// browsers require before remote audio may play.
+els.video?.addEventListener('click', () => {
+  resumeViewerAudio().catch(() => {});
+});
+
+els.fullscreen?.addEventListener('click', async () => {
+  const target = els.videoShell || els.video;
+  if (!target) return;
+
+  try {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      return;
+    }
+
+    if (target.requestFullscreen) await target.requestFullscreen();
+    else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+    else if (els.video?.webkitEnterFullscreen) els.video.webkitEnterFullscreen();
+    else toast('Fullscreen is not supported by this browser.');
+  } catch (error) {
+    console.warn('Fullscreen warning:', error);
+    toast('Could not open fullscreen on this device.');
+  }
+});
 
 // =====================================================
 // COUNTDOWN

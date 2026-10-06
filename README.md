@@ -61,3 +61,11 @@ Recordings remain on the broadcaster's own device. Firebase does not transport v
 
 ## Production note
 Live capacity is determined primarily by your LiveKit plan/infrastructure and each viewer's network. Do not assume a fixed number such as 300 viewers without load testing and checking the provider's current limits/costs.
+
+
+## Viewer sound, fullscreen and branded sharing
+The public live page now includes an explicit **Tap for Sound** control because mobile browsers can block autoplay audio until the viewer interacts with the page. It also includes a **Full Screen** control.
+
+The installed PWA icon is supplied by `manifest.webmanifest` from `assets/icons/icon-192.png` and `icon-512.png`. After changing/deploying icons, an already-installed copy may need to be uninstalled and installed again before the phone launcher refreshes the icon.
+
+Event links are currently shared through the Cloudflare share worker configured in `js/home.js` and `js/live.js`. For WhatsApp/Facebook/X preview cards to show the event title/image instead of a plain URL, that worker must return Open Graph metadata (`og:title`, `og:description`, `og:image`) before redirecting/serving the live page. The worker source is not part of this frontend ZIP, so deploy/update that worker separately.

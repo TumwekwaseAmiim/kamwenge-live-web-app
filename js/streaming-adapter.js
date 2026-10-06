@@ -821,6 +821,46 @@ export async function watchLiveStream(
 
 
 // =====================================================
+// RESUME VIEWER AUDIO AFTER USER GESTURE
+// =====================================================
+
+export async function resumeViewerAudio() {
+
+  let played = false;
+
+  try {
+    if (viewerRoom?.startAudio) {
+      await viewerRoom.startAudio();
+      played = true;
+    }
+  } catch (error) {
+    console.warn('LiveKit startAudio warning:', error);
+  }
+
+  for (const item of viewerAudioTracks) {
+    try {
+      item.element.muted = false;
+      item.element.volume = 1;
+      await item.element.play();
+      played = true;
+    } catch (error) {
+      console.warn('Viewer audio resume warning:', error);
+    }
+  }
+
+  document
+    .querySelectorAll('audio[data-kamwenge-live-audio="1"]')
+    .forEach(element => {
+      element.muted = false;
+      element.volume = 1;
+      element.play().catch(() => {});
+    });
+
+  return played;
+}
+
+
+// =====================================================
 // STOP WATCHING
 // =====================================================
 
