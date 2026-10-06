@@ -1,4 +1,4 @@
-const CACHE = 'kamwenge-live-v3.1.0';
+const CACHE = 'kamwenge-live-v3.2.0';
 
 const ASSETS = [
   './',
@@ -46,96 +46,330 @@ const ASSETS = [
   './assets/icons/icon-48.png',
   './assets/icons/favicon-32.png',
 
-  // Branding images
+  // Branding
   './assets/images/logo/kamwenge-live-logo.png',
   './assets/images/avatar-placeholder.svg'
 
-  // Add developer photo only after the file exists:
+  // Only add this when the file actually exists:
   // './assets/images/developer/amiim.jpg'
 ];
 
 
 // =====================================================
 // INSTALL
-// Cache core Kamwenge Live files
 // =====================================================
 
-self.addEventListener('install', event => {
-  self.skipWaiting();
+self.addEventListener(
+  'install',
+  event => {
 
-  event.waitUntil(
-    caches
-      .open(CACHE)
-      .then(cache => cache.addAll(ASSETS))
-  );
-});
+    self.skipWaiting();
+
+    event.waitUntil(
+      caches
+        .open(CACHE)
+        .then(
+          cache =>
+            cache.addAll(ASSETS)
+        )
+    );
+  }
+);
 
 
 // =====================================================
 // ACTIVATE
-// Remove older Kamwenge Live caches
+// Delete older Kamwenge Live caches
 // =====================================================
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then(keys =>
-        Promise.all(
-          keys
-            .filter(key => key !== CACHE)
-            .map(key => caches.delete(key))
+self.addEventListener(
+  'activate',
+  event => {
+
+    event.waitUntil(
+      caches
+        .keys()
+        .then(
+          keys =>
+            Promise.all(
+              keys
+                .filter(
+                  key =>
+                    key !== CACHE
+                )
+                .map(
+                  key =>
+                    caches.delete(key)
+                )
+            )
         )
-      )
-      .then(() => self.clients.claim())
-  );
-});
+        .then(
+          () =>
+            self.clients.claim()
+        )
+    );
+  }
+);
 
 
 // =====================================================
 // FETCH
-// Network first, cache fallback
 // =====================================================
 
-self.addEventListener('fetch', event => {
-  const request = event.request;
+self.addEventListener(
+  'fetch',
+  event => {
 
-  if (request.method !== 'GET') {
-    return;
+    const request =
+      event.request;
+
+
+    // -------------------------------------------------
+    // GET requests only
+    // -------------------------------------------------
+
+    if (
+      request.method !==
+      'GET'
+    ) {
+      return;
+    }
+
+
+    const url =
+      new URL(
+        request.url
+      );
+
+
+    // -------------------------------------------------
+    // IMPORTANT:
+    // Only control Kamwenge Live's own files.
+    //
+    // Do not interfere with:
+    // Firebase
+    // Firestore
+    // Cloudflare Worker
+    // LiveKit
+    // Cloudinary
+    // jsDelivr
+    // -------------------------------------------------
+
+    if (
+      url.origin !==
+      self.location.origin
+    ) {
+      return;
+    }
+
+
+    // =================================================
+    // HTML / PAGE NAVIGATION
+    //
+    // NETWORK FIRST
+    // So users receive the newest live.html/index.html.
+    // =================================================
+
+    if (
+      request.mode ===
+      'navigate'
+    ) {
+
+      event.respondWith(
+        fetch(request)
+
+          .then(
+            response => {
+
+              if (
+                response &&
+                response.ok
+              ) {
+
+                const copy =
+                  response.clone();
+
+
+                caches
+                  .open(CACHE)
+                  .then(
+                    cache =>
+                      cache.put(
+                        request,
+                        copy
+                      )
+                  );
+              }
+
+
+              return response;
+            }
+          )
+
+          .catch(
+            async () => {
+
+              const cached =
+                await caches.match(
+                  request
+                );
+
+
+              if (cached) {
+                return cached;
+              }
+
+
+              return caches.match(
+                './index.html'
+              );
+            }
+          )
+      );
+
+
+      return;
+    }
+
+
+    // =================================================
+    // JAVASCRIPT / CSS
+    //
+    // NETWORK FIRST
+    //
+    // Important while Kamwenge Live is actively being
+    // developed. This reduces old-code problems.
+    // =================================================
+
+    if (
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.css') ||
+      url.pathname.endsWith('.webmanifest')
+    ) {
+
+      event.respondWith(
+        fetch(request)
+
+          .then(
+            response => {
+
+              if (
+                response &&
+                response.ok
+              ) {
+
+                const copy =
+                  response.clone();
+
+
+                caches
+                  .open(CACHE)
+                  .then(
+                    cache =>
+                      cache.put(
+                        request,
+                        copy
+                      )
+                  );
+              }
+
+
+              return response;
+            }
+          )
+
+          .catch(
+            () =>
+              caches.match(
+                request
+              )
+          )
+      );
+
+
+      return;
+    }
+
+
+    // =================================================
+    // IMAGES / ICONS / OTHER STATIC FILES
+    //
+    // CACHE FIRST, THEN NETWORK
+    // =================================================
+
+    event.respondWith(
+      caches
+        .match(request)
+        .then(
+          cached => {
+
+            if (cached) {
+
+              // Update quietly in background
+              event.waitUntil(
+                fetch(request)
+                  .then(
+                    response => {
+
+                      if (
+                        response &&
+                        response.ok
+                      ) {
+
+                        return caches
+                          .open(CACHE)
+                          .then(
+                            cache =>
+                              cache.put(
+                                request,
+                                response
+                              )
+                          );
+                      }
+                    }
+                  )
+                  .catch(
+                    () => {}
+                  )
+              );
+
+
+              return cached;
+            }
+
+
+            return fetch(
+              request
+            )
+              .then(
+                response => {
+
+                  if (
+                    response &&
+                    response.ok
+                  ) {
+
+                    const copy =
+                      response.clone();
+
+
+                    caches
+                      .open(CACHE)
+                      .then(
+                        cache =>
+                          cache.put(
+                            request,
+                            copy
+                          )
+                      );
+                  }
+
+
+                  return response;
+                }
+              );
+          }
+        )
+    );
   }
-
-  // Don't try to cache browser extension requests etc.
-  if (!request.url.startsWith('http')) {
-    return;
-  }
-
-  event.respondWith(
-    fetch(request)
-      .then(response => {
-        const copy = response.clone();
-
-        caches
-          .open(CACHE)
-          .then(cache => {
-            cache.put(request, copy);
-          });
-
-        return response;
-      })
-      .catch(async () => {
-        const cached =
-          await caches.match(request);
-
-        if (cached) {
-          return cached;
-        }
-
-        // Navigation fallback
-        if (request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-
-        return Response.error();
-      })
-  );
-});
+);
