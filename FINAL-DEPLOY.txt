@@ -1,30 +1,28 @@
-KAMWENGE LIVE — FINAL WORKING DEPLOYMENT
+KAMWENGE LIVE™ — FINAL UPDATED DEPLOYMENT
 
-1) CLOUDFLARE TOKEN WORKER
-   Open Cloudflare > Workers & Pages > kamwenge-live-token > Edit code.
-   Replace the Worker with:
-     cloudflare/livekit-token-worker.js
-   Keep the existing secrets/variables unchanged:
-     LIVEKIT_URL
-     LIVEKIT_API_KEY
-     LIVEKIT_API_SECRET
-   Deploy.
+1. CLOUDFLARE TOKEN WORKER
+Open Cloudflare > Workers & Pages > kamwenge-live-token > Edit code.
+Replace its code with:
+  cloudflare/livekit-token-worker.js
+Keep existing Worker secrets/variables unchanged:
+  LIVEKIT_URL
+  LIVEKIT_API_KEY
+  LIVEKIT_API_SECRET
+Deploy the Worker.
 
-2) FIRESTORE RULES
-   From the Firebase project folder run:
-     firebase deploy --only firestore:rules
+2. FIRESTORE RULES
+From the Firebase project folder run:
+  firebase deploy --only firestore:rules
 
-3) WEBSITE
-   Copy this project's files into your Git-cloned kamwenge-live-web-app repository,
-   then git add/commit/push.
+3. WEBSITE / GITHUB PAGES
+Copy this folder into your cloned Git repository, then commit and push.
 
-4) TEST WITH TWO DIFFERENT PHONES
-   Phone A: sign in as broadcaster, open Studio, tap Camera, allow BOTH camera and microphone, tap Go Live.
-   Phone B: open public event, tap Tap for Sound. It should see AND hear Phone A.
-   Phone B: request to speak. Phone A approves. Phone B taps Join Live and allows microphone.
-   Phone A: tap Guest Sound if the phone/browser blocks guest audio. Both sides should then hear one another.
+4. TEST WITH TWO PHONES
+Broadcaster: sign in > Studio > camera/mic > Go Live.
+Viewer: open event > Tap for Sound.
+Viewer: Ask to Speak > broadcaster Allow > viewer Join Live.
+Approved guest can then use microphone, camera, or Share Screen.
+Broadcaster can hear the guest and can remove the guest.
 
-NOTES
-- Never test two-way audio with both phones beside each other at high volume: it causes acoustic echo/feedback.
-- Clear Voice requests echo cancellation, noise suppression, automatic gain control and voice isolation where the browser supports them.
-- Strong physical wind cannot be completely removed by browser software; a windscreen/lapel mic remains best outdoors.
+NOTE
+The older pasted Worker that says “speaker -> approved microphone guest” is NOT the final one for this build. The included Worker matches the frontend and allows approved guests to publish microphone, camera and screen share after broadcaster approval.

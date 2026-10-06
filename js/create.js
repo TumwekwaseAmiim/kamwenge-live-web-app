@@ -1,9 +1,10 @@
-import {createMeeting,slugify} from './store.js';
+import {createMeeting,slugify,getMeeting} from './store.js';
 import {requireBroadcaster} from './auth.js';
 import {toast} from './app.js';
 const form=document.querySelector('#meeting-form');
+const ACTIVE_EVENT_KEY='kamwengeLiveActiveEvent';
 let session=null;
-(async()=>{try{session=await requireBroadcaster();document.querySelector('#creator-name').textContent=session.profile.displayName||session.user.email;}catch(e){toast(e.message);}})();
+(async()=>{try{session=await requireBroadcaster();document.querySelector('#creator-name').textContent=session.profile.displayName||session.user.email;const saved=JSON.parse(localStorage.getItem(ACTIVE_EVENT_KEY)||'null');if(saved?.eventId){const active=await getMeeting(saved.eventId).catch(()=>null);if(active?.status==='live'&&(active.hostId===session.user.uid||session.profile.role==='admin')){toast('You already have a live room. Resuming it now…');setTimeout(()=>location.replace(`studio.html?event=${encodeURIComponent(active.id)}`),500);return;}localStorage.removeItem(ACTIVE_EVENT_KEY);}}catch(e){toast(e.message);}})();
 form?.addEventListener('submit',async e=>{
   e.preventDefault(); if(!session)return toast('Broadcaster login required.');
   const fd=new FormData(form),title=String(fd.get('title')||'').trim();

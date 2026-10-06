@@ -1,6 +1,14 @@
 // Kamwenge Live™ — Cloudflare LiveKit token worker
+// FINAL INTERACTIVE VERSION
 // Required Worker secrets/variables:
 // LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+//
+// Roles:
+// viewer      -> watch/listen only
+// publisher   -> broadcaster (mic/camera/screen)
+// broadcaster -> broadcaster (mic/camera/screen)
+// admin       -> broadcaster (mic/camera/screen)
+// speaker     -> approved guest (mic/camera/screen)
 
 const FIREBASE_PROJECT_ID='kamwenge-live';
 
@@ -45,7 +53,7 @@ export default { async fetch(request,env){
     const now=Math.floor(Date.now()/1000);
     const payload={iss:env.LIVEKIT_API_KEY,sub:identity,name,nbf:now-5,exp:now+7200,video:{room:roomName,roomJoin:true,canSubscribe:true,canPublish:isPublisher||isSpeaker,canPublishData:isPublisher||isSpeaker}};
     const token=await signJwt(payload,env.LIVEKIT_API_SECRET);
-    return json({token,wsUrl:env.LIVEKIT_URL,participant_token:token,server_url:env.LIVEKIT_URL,room:roomName,role:isPublisher?'publisher':isSpeaker?'speaker':'viewer',identity},200,cors);
+    return json({token,wsUrl:env.LIVEKIT_URL,participant_token:token,server_url:env.LIVEKIT_URL,participantToken:token,serverUrl:env.LIVEKIT_URL,room:roomName,role:isPublisher?'publisher':isSpeaker?'speaker':'viewer',identity,canPublish:isPublisher||isSpeaker,canSubscribe:true,speakerMedia:isSpeaker?'microphone-camera-screen':'none',expiresIn:7200},200,cors);
   }catch(error){console.error('Kamwenge Live token error:',error);return json({error:error?.message||'Unable to create LiveKit token.'},500,cors);}
 }};
 

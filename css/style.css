@@ -3963,3 +3963,40 @@ video {
   .studio-controls{position:static;grid-template-columns:repeat(8,minmax(0,1fr))!important;}
   .studio-controls .control.danger{grid-column:auto;}
 }
+
+
+/* =========================================================
+   KAMWENGE LIVE — PARTICIPANT-FIRST STUDIO + MOBILE POLISH
+========================================================= */
+.studio-participant-strip{
+  margin-top:10px;padding:10px 11px;border:1px solid #eadff1;border-radius:15px;background:#fff;
+  box-shadow:0 8px 24px rgba(54,24,76,.06);min-width:0;
+}
+.studio-participant-strip-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:.86rem}
+.active-speakers-strip{display:flex!important;gap:8px!important;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:1px 1px 5px;margin:0!important;scrollbar-width:none}
+.active-speakers-strip::-webkit-scrollbar{display:none}
+.active-speakers-strip .active-speaker{flex:0 0 auto;min-width:160px;max-width:220px;scroll-snap-align:start;padding:8px 10px}
+.active-speakers-strip .active-speaker span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.active-speakers-strip .active-speaker .btn{padding:6px 8px;font-size:.72rem}
+#share-screen:disabled,#speaker-screen:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.2)}
+
+@media(max-width:760px){
+  body:has(#studio-video) .page-hero{padding-bottom:10px}
+  body:has(#studio-video) .page-hero>p{display:none}
+  body:has(#studio-video) #public-link{padding:8px 10px;font-size:.75rem}
+  body:has(#studio-video) .video-shell{aspect-ratio:16/9!important;max-height:46svh!important;border-radius:14px!important}
+  body:has(#studio-video) .video-shell video{object-fit:contain!important}
+  .studio-participant-strip{margin-top:8px;padding:8px 9px}
+  .studio-participant-strip-head{margin-bottom:6px;font-size:.78rem}
+  .active-speakers-strip .active-speaker{min-width:145px;font-size:.76rem}
+  body:has(#studio-video) .record-panel{margin-top:10px;padding:12px}
+  body:has(#studio-video) .studio-brand-note{display:none}
+  body:has(#studio-video) .studio-side-stack{margin-top:6px}
+  body:has(#studio-video) .speaker-manager{padding:12px}
+}
+
+@media(max-width:420px){
+  body:has(#studio-video) .studio-controls{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  body:has(#studio-video) .studio-controls .control{font-size:.63rem;min-height:44px;padding:7px 3px}
+  body:has(#studio-video) .studio-controls .control.danger{grid-column:1/-1!important;font-size:.8rem}
+}

@@ -1,0 +1,17 @@
+KAMWENGE LIVE™ — CONSOLIDATED UPDATE
+
+This build contains the six agreed improvements in one project update:
+1. Compact broadcaster mobile layout with 16:9 video.
+2. Joined speakers appear immediately under the broadcaster video in a horizontal strip.
+3. Active broadcast is remembered; opening Create while live resumes the existing room.
+4. Share text includes the event description; cloudflare/share-worker.js provides branded OG metadata. Shared URLs include a cache-busting version so WhatsApp is more likely to refresh previews.
+5. Existing working two-way audio architecture is preserved; reconnection/audio-resume handling is retained and strengthened.
+6. High-quality 1080p camera target for broadcaster where device/network support it; simulcast/adaptive delivery remains enabled. Screen-share buttons disable cleanly when the browser does not support screen sharing.
+
+DEPLOY
+A) Website: push this complete project to GitHub Pages.
+B) Firestore: firebase deploy --only firestore:rules
+C) LiveKit token Worker: cloudflare/livekit-token-worker.js (only if not already deployed).
+D) Branded sharing Worker: cloudflare/share-worker.js to the Worker URL used by SHARE_WORKER in js/live.js.
+
+Do not expose LIVEKIT_API_SECRET in browser code. Keep existing Cloudflare variables/secrets.

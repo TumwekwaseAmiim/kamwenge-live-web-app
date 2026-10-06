@@ -270,6 +270,8 @@ export async function publishStream(eventId, mediaStream) {
     emitStudioParticipants();
     if (studioAudioUnlocked) resumeStudioAudio().catch(() => {});
   });
+  room.on(RoomEvent.Reconnecting,()=>{});
+  room.on(RoomEvent.Reconnected,()=>{if(studioAudioUnlocked)resumeStudioAudio().catch(()=>{});emitStudioParticipants();});
   room.on(RoomEvent.ParticipantConnected, emitStudioParticipants);
   room.on(RoomEvent.ParticipantDisconnected, emitStudioParticipants);
   room.on(RoomEvent.TrackSubscribed, (track, pub, participant) => attachStudioRemoteTrack(track, pub, participant));
@@ -283,7 +285,8 @@ export async function publishStream(eventId, mediaStream) {
     await room.localParticipant.publishTrack(videoTrack, {
       name: 'main-video',
       source: Track.Source.Camera,
-      simulcast: true
+      simulcast: true,
+      videoEncoding: { maxBitrate: 4500000, maxFramerate: 30 }
     });
     publisherTracks.push(videoTrack);
   }
@@ -503,7 +506,7 @@ export async function setSpeakerCamera(enabled = true) {
   if (viewerCameraTrack) return true;
 
   viewerCameraStream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: 'user' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+    video: { facingMode: { ideal: 'user' }, width: { ideal: 1280, max: 1280 }, height: { ideal: 720, max: 720 }, frameRate:{ideal:30,max:30} },
     audio: false
   });
   viewerCameraTrack = viewerCameraStream.getVideoTracks()[0];
