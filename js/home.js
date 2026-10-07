@@ -3,11 +3,13 @@ import {
   asDate
 } from './store.js';
 
+
 import {
   escapeHTML,
   formatDate,
   toast
 } from './app.js';
+
 
 
 // =====================================================
@@ -20,6 +22,7 @@ const SHARE_WORKER =
 
 const avatar =
   'assets/images/avatar-placeholder.svg';
+
 
 
 // =====================================================
@@ -36,6 +39,7 @@ const upcomingGrid =
   document.querySelector(
     '#upcoming-grid'
   );
+
 
 
 // =====================================================
@@ -81,34 +85,231 @@ function getMeetingDate(
 
       return parsed;
     }
+
+  }
+
+
+  /*
+    Extra fallback support.
+
+    This helps if an older meeting document
+    saved its schedule using another common field.
+  */
+
+  const fallbackValues = [
+    meeting?.dateTime,
+    meeting?.startAt,
+    meeting?.startsAt,
+    meeting?.scheduledDate
+  ];
+
+
+  for (
+    const value
+    of fallbackValues
+  ) {
+
+    if (!value) {
+      continue;
+    }
+
+
+    const converted =
+      asDate(value);
+
+
+    if (
+      converted instanceof Date &&
+      !Number.isNaN(
+        converted.getTime()
+      )
+    ) {
+
+      return converted;
+    }
+
+
+    const parsed =
+      new Date(value);
+
+
+    if (
+      !Number.isNaN(
+        parsed.getTime()
+      )
+    ) {
+
+      return parsed;
+    }
+
   }
 
 
   return null;
+
 }
+
+
+
+// =====================================================
+// STATUS HELPERS
+// =====================================================
+
+function getStatus(
+  meeting
+) {
+
+  return String(
+    meeting?.status || ''
+  )
+    .trim()
+    .toLowerCase();
+
+}
+
+
+
+function isLiveStatus(
+  meeting
+) {
+
+  return (
+    getStatus(meeting) ===
+    'live'
+  );
+
+}
+
+
+
+function isUpcomingStatus(
+  meeting
+) {
+
+  const status =
+    getStatus(meeting);
+
+
+  return (
+    status === 'scheduled' ||
+    status === 'upcoming'
+  );
+
+}
+
+
+
+function isEndedStatus(
+  meeting
+) {
+
+  const status =
+    getStatus(meeting);
+
+
+  return (
+    status === 'ended' ||
+    status === 'completed'
+  );
+
+}
+
 
 
 // =====================================================
 // EVENT VISIBILITY
-// Ended events remain in Firestore for records, but disappear
-// from public discovery 24 hours after they end.
+//
+// Ended events remain in Firestore for records,
+// but disappear from public discovery 24 hours
+// after they end.
 // =====================================================
 
-const ENDED_VISIBLE_FOR_MS = 24 * 60 * 60 * 1000;
+const ENDED_VISIBLE_FOR_MS =
+  24 * 60 * 60 * 1000;
 
-function endedAtDate(meeting) {
-  const value = meeting?.endedAt;
-  if (!value) return null;
-  const date = asDate(value);
-  return date instanceof Date && !Number.isNaN(date.getTime()) ? date : null;
+
+
+function endedAtDate(
+  meeting
+) {
+
+  const value =
+    meeting?.endedAt;
+
+
+  if (!value) {
+    return null;
+  }
+
+
+  const date =
+    asDate(value);
+
+
+  if (
+    date instanceof Date &&
+    !Number.isNaN(
+      date.getTime()
+    )
+  ) {
+
+    return date;
+  }
+
+
+  const parsed =
+    new Date(value);
+
+
+  if (
+    !Number.isNaN(
+      parsed.getTime()
+    )
+  ) {
+
+    return parsed;
+  }
+
+
+  return null;
+
 }
 
-function isPubliclyVisible(meeting, now = Date.now()) {
-  if (meeting?.status !== 'ended') return true;
-  const ended = endedAtDate(meeting);
-  if (!ended) return false;
-  return now - ended.getTime() < ENDED_VISIBLE_FOR_MS;
+
+
+function isPubliclyVisible(
+  meeting,
+  now = Date.now()
+) {
+
+  if (
+    !isEndedStatus(meeting)
+  ) {
+
+    return true;
+  }
+
+
+  const ended =
+    endedAtDate(meeting);
+
+
+  if (!ended) {
+
+    return false;
+  }
+
+
+  return (
+    now -
+    ended.getTime()
+    <
+    ENDED_VISIBLE_FOR_MS
+  );
+
 }
+
+
 
 // =====================================================
 // SHARE URL
@@ -124,7 +325,9 @@ function getShareURL(
       eventId
     )
   );
+
 }
+
 
 
 // =====================================================
@@ -136,8 +339,9 @@ function createCard(
 ) {
 
   const isLive =
-    meeting.status ===
-    'live';
+    isLiveStatus(
+      meeting
+    );
 
 
   const meetingDate =
@@ -214,6 +418,7 @@ function createCard(
 
       <div class="card-body">
 
+
         <div class="event-meta">
 
           <span class="badge ${badgeClass}">
@@ -258,10 +463,12 @@ function createCard(
 
         </div>
 
+
       </div>
 
 
       <div class="event-footer">
+
 
         <a
           class="btn ${actionClass}"
@@ -294,11 +501,14 @@ function createCard(
           🔗 Share
         </button>
 
+
       </div>
 
     </article>
   `;
+
 }
+
 
 
 // =====================================================
@@ -325,7 +535,9 @@ function noLiveEvents() {
 
     </div>
   `;
+
 }
+
 
 
 function noUpcomingEvents() {
@@ -334,7 +546,7 @@ function noUpcomingEvents() {
     <div class="empty-state">
 
       <div class="emoji">
-        🗓️
+        ⏳
       </div>
 
       <strong>
@@ -347,7 +559,9 @@ function noUpcomingEvents() {
 
     </div>
   `;
+
 }
+
 
 
 // =====================================================
@@ -396,7 +610,8 @@ function connectShareButtons() {
             if (date) {
 
               shareText +=
-                `\n📅 ${date}`;
+                `\n🗓️ ${date}`;
+
             }
 
 
@@ -404,6 +619,7 @@ function connectShareButtons() {
 
               shareText +=
                 `\n🎙️ ${host}`;
+
             }
 
 
@@ -413,12 +629,14 @@ function connectShareButtons() {
 
             try {
 
+
               if (
                 navigator.share
               ) {
 
                 await navigator.share(
                   {
+
                     title:
                       `${title} • Kamwenge Live™`,
 
@@ -427,11 +645,13 @@ function connectShareButtons() {
 
                     url:
                       shareURL
+
                   }
                 );
 
 
                 return;
+
               }
 
 
@@ -447,7 +667,10 @@ function connectShareButtons() {
               );
 
 
-            } catch (error) {
+            } catch (
+              error
+            ) {
+
 
               if (
                 error?.name ===
@@ -455,6 +678,7 @@ function connectShareButtons() {
               ) {
 
                 return;
+
               }
 
 
@@ -465,6 +689,7 @@ function connectShareButtons() {
 
 
               try {
+
 
                 await navigator
                   .clipboard
@@ -480,16 +705,24 @@ function connectShareButtons() {
 
               } catch {
 
+
                 window.prompt(
                   'Copy this Kamwenge Live event link:',
                   shareURL
                 );
+
               }
+
             }
+
           };
+
       }
+
     );
+
 }
+
 
 
 // =====================================================
@@ -503,7 +736,30 @@ function render(
   const now =
     Date.now();
 
-  meetings = meetings.filter(meeting => isPubliclyVisible(meeting, now));
+
+  /*
+    Always work with a clean array.
+  */
+
+  meetings =
+    Array.isArray(meetings)
+      ? meetings
+      : [];
+
+
+  /*
+    Keep public visibility rules.
+  */
+
+  meetings =
+    meetings.filter(
+      meeting =>
+        isPubliclyVisible(
+          meeting,
+          now
+        )
+    );
+
 
 
   // ===================================================
@@ -516,8 +772,9 @@ function render(
     meetings
       .filter(
         meeting =>
-          meeting.status ===
-          'live'
+          isLiveStatus(
+            meeting
+          )
       )
       .sort(
         (
@@ -541,17 +798,24 @@ function render(
             bDate -
             aDate
           );
+
         }
+
       );
 
 
+
   // ===================================================
-  // UPCOMING
+  // UPCOMING EVENTS
   //
-  // Must:
-  // 1. Be scheduled
-  // 2. Have a valid date
-  // 3. Be in the future
+  // FIX:
+  // Accept BOTH:
+  //
+  // scheduled
+  // upcoming
+  //
+  // This keeps the public home page consistent with
+  // dashboard event statuses.
   // ===================================================
 
   const upcomingEvents =
@@ -559,9 +823,44 @@ function render(
       .filter(
         meeting => {
 
+          /*
+            Do not duplicate live events
+            inside Upcoming.
+          */
+
           if (
-            meeting.status !==
-            'scheduled'
+            isLiveStatus(
+              meeting
+            )
+          ) {
+
+            return false;
+          }
+
+
+          /*
+            Do not show ended events
+            as upcoming.
+          */
+
+          if (
+            isEndedStatus(
+              meeting
+            )
+          ) {
+
+            return false;
+          }
+
+
+          /*
+            Accept scheduled OR upcoming.
+          */
+
+          if (
+            !isUpcomingStatus(
+              meeting
+            )
           ) {
 
             return false;
@@ -574,16 +873,59 @@ function render(
             );
 
 
+          /*
+            If an upcoming event has no usable
+            schedule date, still allow it to appear.
+
+            This prevents a valid Firestore event
+            from disappearing completely because
+            of an older date-field format.
+          */
+
           if (!date) {
-            return false;
+
+            return true;
+
           }
 
 
-          return (
+          /*
+            Future event.
+          */
+
+          if (
             date.getTime() >
             now
+          ) {
+
+            return true;
+
+          }
+
+
+          /*
+            Grace period:
+            If the scheduled time has just passed,
+            keep the event visible for 6 hours unless
+            the broadcaster has ended it.
+
+            This is useful when an event is delayed
+            or the broadcaster starts late.
+          */
+
+          const SIX_HOURS =
+            6 * 60 * 60 * 1000;
+
+
+          return (
+            now -
+            date.getTime()
+            <
+            SIX_HOURS
           );
+
         }
+
       )
       .sort(
         (
@@ -591,21 +933,107 @@ function render(
           b
         ) => {
 
+          const aDate =
+            getMeetingDate(
+              a
+            );
+
+
+          const bDate =
+            getMeetingDate(
+              b
+            );
+
+
+          /*
+            Events without a readable date
+            go after dated events.
+          */
+
+          if (
+            !aDate &&
+            !bDate
+          ) {
+
+            return 0;
+
+          }
+
+
+          if (!aDate) {
+
+            return 1;
+
+          }
+
+
+          if (!bDate) {
+
+            return -1;
+
+          }
+
+
           return (
-            getMeetingDate(a)
-              .getTime() -
-            getMeetingDate(b)
-              .getTime()
+            aDate.getTime() -
+            bDate.getTime()
           );
+
         }
+
       );
+
+
+
+  // ===================================================
+  // DEBUG INFORMATION
+  //
+  // Useful during testing.
+  // You can see this in browser DevTools Console.
+  // ===================================================
+
+  console.log(
+    'Kamwenge Live public meetings:',
+    {
+      total:
+        meetings.length,
+
+      live:
+        liveEvents.length,
+
+      upcoming:
+        upcomingEvents.length,
+
+      meetings:
+        meetings.map(
+          meeting => ({
+
+            id:
+              meeting.id,
+
+            title:
+              meeting.title,
+
+            status:
+              meeting.status,
+
+            scheduledAt:
+              meeting.scheduledAt
+
+          })
+        )
+    }
+  );
+
 
 
   // ===================================================
   // RENDER LIVE
   // ===================================================
 
-  if (liveGrid) {
+  if (
+    liveGrid
+  ) {
 
     liveGrid.innerHTML =
       liveEvents.length
@@ -615,14 +1043,18 @@ function render(
             )
             .join('')
         : noLiveEvents();
+
   }
+
 
 
   // ===================================================
   // RENDER UPCOMING
   // ===================================================
 
-  if (upcomingGrid) {
+  if (
+    upcomingGrid
+  ) {
 
     upcomingGrid.innerHTML =
       upcomingEvents.length
@@ -632,11 +1064,15 @@ function render(
             )
             .join('')
         : noUpcomingEvents();
+
   }
 
 
+
   connectShareButtons();
+
 }
+
 
 
 // =====================================================
@@ -657,7 +1093,9 @@ try {
       );
 
 
-      if (liveGrid) {
+      if (
+        liveGrid
+      ) {
 
         liveGrid.innerHTML =
           `
@@ -673,10 +1111,13 @@ try {
 
             </div>
           `;
+
       }
 
 
-      if (upcomingGrid) {
+      if (
+        upcomingGrid
+      ) {
 
         upcomingGrid.innerHTML =
           `
@@ -692,8 +1133,11 @@ try {
 
             </div>
           `;
+
       }
+
     }
+
   );
 
 
@@ -714,4 +1158,5 @@ try {
   toast(
     error.message
   );
+
 }
